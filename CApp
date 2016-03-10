@@ -33,6 +33,7 @@
 # Target Details
 
 ARCHIVE ?= application
+PACKAGE ?=
 APP ?= !App
 UKRES ?= Resources/UK
 RUNIMAGE ?= !RunImage,ff8
@@ -52,6 +53,7 @@ MANSPR ?= ManSprite
 READMEHDR ?= Header
 MENUSRC ?= menudef
 FINDHELPSRC ?= Help.bbt
+PKGCTRL ?= Control
 
 OBJS ?= main.o
 
@@ -62,6 +64,7 @@ MENUDIR := menus
 MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
+PKGDIR := package
 
 # Includes and libraries.
 
@@ -75,19 +78,20 @@ CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 MKDIR := mkdir
 RM := rm -rf
 CP := cp
-
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
-
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
 MENUGEN := $(SFTOOLS_BIN)/menugen
 TOKENIZE := $(SFTOOLS_BIN)/tokenize
+GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
+MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 
 # Build Flags
 
 CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
+PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
@@ -102,13 +106,16 @@ HELP_DATE := $(shell date "+%-d %B %Y")
 # Construct version or revision information.
 
 ifeq ($(VERSION),)
+  PACKAGE := $(PACKAGE)Unstable
   RELEASE := $(shell svnversion --no-newline)
   VERSION := r$(RELEASE)
   RELEASE := $(subst :,-,$(RELEASE))
   HELP_VERSION := ----
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
 else
   RELEASE := $(subst .,,$(VERSION))
   HELP_VERSION := $(VERSION)
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
 endif
 
 $(info Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE))
@@ -118,6 +125,7 @@ $(info Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE))
 
 ZIPFILE := $(ARCHIVE)$(RELEASE).zip
 SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
+PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(shell date "+%Y%m%d").zip
 
 # Build everything, but don't package it for release.
@@ -190,6 +198,13 @@ endif
 release: clean all
 	$(RM) ../$(ZIPFILE)
 	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
+ifneq ($(PACKAGE),)
+	$(RM) ../$(PKGZIPFILE)
+	$(RM) $(OUTDIR)/package/Apps/Misc/*
+	(cd $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
+	$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
+	(cd $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+endif
 	$(RM) ../$(SRCZIPFILE)
 	$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) Makefile
 
