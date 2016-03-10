@@ -1,4 +1,4 @@
-# Copyright 2014-2016, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2010-2016, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -20,7 +20,7 @@
 # See the Licence for the specific language governing
 # permissions and limitations under the Licence.
 
-# Shared Makefile for Tokenize-based BASIC Applications
+# Shared Makefile for GCC-based C Applications
 #
 # This file really needs to be run by GNUMake.
 # It is intended for native compilation on Linux (for use in a GCCSDK
@@ -35,7 +35,7 @@
 ARCHIVE ?= application
 APP ?= !App
 UKRES ?= Resources/UK
-RUNIMAGE ?= !RunImage,ffb
+RUNIMAGE ?= !RunImage,ff8
 MENUS ?= Menus,ffd
 FINDHELP ?= !Help,ffb
 TEXTHELP ?= HelpText,fff
@@ -53,24 +53,30 @@ READMEHDR ?= Header
 MENUSRC ?= menudef
 FINDHELPSRC ?= Help.bbt
 
-SRCS ?= AppSrc.bbt
+OBJS ?= main.o
 
 # Set up the various build directories.
 
 SRCDIR := src
 MENUDIR := menus
 MANUAL := manual
+OBJDIR := obj
 OUTDIR := build
 
+# Includes and libraries.
+
+INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
+LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32 -lSFLib32 -lFlexLib32
+
 # Build Tools
+
+CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 
 MKDIR := mkdir
 RM := rm -rf
 CP := cp
 
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
-
-LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
@@ -80,12 +86,13 @@ TOKENIZE := $(SFTOOLS_BIN)/tokenize
 
 # Build Flags
 
+CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
-MENUGENFLAGS :=
-TOKENIZEFLAGS := -verbose -crunch EIrW -warn pV -swi -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokSWIs.h
+MENUGENFLAGS := -d -m
+TOKENIZEFLAGS := -warn p
 
 # The build date.
 
@@ -123,10 +130,28 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
 
 # Build the complete !RunImage from the object files.
 
-SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
+OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
-	$(TOKENIZE) $(TOKENIZEFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+$(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
+	$(CC) $(CCFLAGS) $(LINKS) -o $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OBJS)
+
+# Create a folder to hold the object files.
+
+$(OBJDIR):
+	$(MKDIR) $(OBJDIR)
+
+# Build the object files, and identify their dependencies.
+
+-include $(OBJS:.o=.d)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
+	$(CC) -c $(CCFLAGS) $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) $(INCLUDES) $< > $(@:.o=.d)
+	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
+	@rm -f $(@:.o=.d).tmp
+
 
 # Build the menus file.
 
@@ -179,6 +204,7 @@ backup:
 # Clean targets
 
 clean:
+	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
