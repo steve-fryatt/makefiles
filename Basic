@@ -101,16 +101,20 @@ HELP_DATE := $(shell date "+%-d %B %Y")
 # Construct version or revision information.
 
 ifeq ($(VERSION),)
-  PACKAGE := $(PACKAGE)Unstable
   RELEASE := $(shell svnversion --no-newline)
   VERSION := r$(RELEASE)
   RELEASE := $(subst :,-,$(RELEASE))
   HELP_VERSION := ----
+ifneq ($(PACKAGE),)
+  PACKAGE := $(PACKAGE)Unstable
   PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+endif
 else
   RELEASE := $(subst .,,$(VERSION))
   HELP_VERSION := $(VERSION)
+ifneq ($(PACKAGE),)
   PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+endif
 endif
 
 $(info Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE))
