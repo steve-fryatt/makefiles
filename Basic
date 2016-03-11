@@ -117,8 +117,6 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
-$(info Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE))
-
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -126,6 +124,10 @@ ZIPFILE := $(ARCHIVE)$(RELEASE).zip
 SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(shell date "+%Y%m%d").zip
+
+# Inform the user what we're about to do.
+
+$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
 
 # Build everything, but don't package it for release.
 
@@ -140,61 +142,72 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
 SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
-	$(TOKENIZE) $(TOKENIZEFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+	$(info *TOKENIZING: $(OUTDIR)/$(APP)/$(RUNIMAGE))
+	@$(TOKENIZE) $(TOKENIZEFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
 
 # Build the menus file.
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
-	$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
+	$(info *MAKE MENUS: $(MENUDIR)/$(MENUSRC))
+	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
 
 # Build the documentation
 
 documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP), $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP), $(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
-	$(TOKENIZE) $(TOKENIZEFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
+	$(info *TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP))
+	@$(TOKENIZE) $(TOKENIZEFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
-	$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	$(info *TEXT MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 ifneq ($(SHHELP),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
-	$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-	$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
-	$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
-	$(RM) SHTemp
+	$(info *STRONGHELP MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
+	@$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
+	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
+	@$(RM) SHTemp
 endif
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
-	$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
+	$(info *CREATE README: $(OUTDIR)/$(README))
+	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
-	$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	$(info *HTML MANUAL: $(OUTDIR)/$(HTMLHELP))
+	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 
 # Build the release Zip file.
 
 release: clean all
-	$(RM) ../$(ZIPFILE)
-	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
+	$(info *ZIPPING RELEASE: $(ZIPFILE))
+	@$(RM) ../$(ZIPFILE)
+	@(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
-	$(RM) ../$(PKGZIPFILE)
-	$(RM) $(OUTDIR)/package/Apps/Misc/*
-	(cd $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
-	$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
-	(cd $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+	$(info *ZIPPING PACKAGE: $(PKGZIPFILE))
+	@$(RM) ../$(PKGZIPFILE)
+	@$(RM) $(OUTDIR)/package/Apps/Misc/*
+	@(cd $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
+	@(cd $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
 endif
-	$(RM) ../$(SRCZIPFILE)
-	$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) Makefile
+	$(info *ZIPPING SOURCE: $(SRCZIPFILE))
+	@$(RM) ../$(SRCZIPFILE)
+	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) Makefile
 
 
 # Build a backup Zip file
 
 backup:
-	$(RM) ../$(BUZIPFILE)
-	$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+	$(info *ZIPPING BACKUP: $(BUZIPFILE))
+	@$(RM) ../$(BUZIPFILE)
+	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
 
 # Clean targets
