@@ -73,11 +73,11 @@ LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32 -lSFLib32 -lFlexLib32
 
 # Build Tools
 
-CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
-
-MKDIR := mkdir
+ECHO := echo
+MKDIR := mkdir -p
 RM := rm -rf
 CP := cp
+CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
@@ -97,6 +97,11 @@ BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
 TOKENIZEFLAGS := -warn p
+
+# Set up escape sequences for colouring terminal output.
+
+COLOUR_ACTION := \033[1;32m
+COLOUR_END := \033[0m
 
 # The build date.
 
@@ -147,21 +152,16 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
-	$(info *LINKING: $(OUTDIR)/$(APP)/$(RUNIMAGE))
+	@$(ECHO) "$(COLOUR_ACTION)*           LINKING: $(OUTDIR)/$(APP)/$(RUNIMAGE)$(COLOUR_END)"
 	@$(CC) $(CCFLAGS) $(LINKS) -o $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OBJS)
-
-# Create a folder to hold the object files.
-
-$(OBJDIR):
-	$(info *MAKING OBJECT FOLDER)
-	@$(MKDIR) $(OBJDIR)
 
 # Build the object files, and identify their dependencies.
 
 -include $(OBJS:.o=.d)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
-	$(info *COMPILING: $<)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@$(ECHO) "$(COLOUR_ACTION)*         COMPILING: $<$(COLOUR_END)"
+	@$(MKDIR) $(@D)
 	@$(CC) -c $(CCFLAGS) $(INCLUDES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) $(INCLUDES) $< > $(@:.o=.d)
 	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
@@ -169,11 +169,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
 	@rm -f $(@:.o=.d).tmp
 
-
 # Build the menus file.
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
-	$(info *MAKE MENUS: $(MENUDIR)/$(MENUSRC))
+	@$(ECHO) "$(COLOUR_ACTION)*        MAKE MENUS: $(MENUDIR)/$(MENUSRC)$(COLOUR_END)"
 	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
 
 # Build the documentation
@@ -181,16 +180,16 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
 documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP), $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP), $(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
-	$(info *TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP))
+	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP)$(COLOUR_END)"
 	@$(TOKENIZE) $(TOKENIZEFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
-	$(info *TEXT MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
+	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)$(COLOUR_END)"
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 ifneq ($(SHHELP),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
-	$(info *STRONGHELP MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
+	@$(ECHO) "$(COLOUR_ACTION)* STRONGHELP MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)$(COLOUR_END)"
 	@$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
 	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
@@ -198,12 +197,12 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
 endif
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
-	$(info *CREATE README: $(OUTDIR)/$(README))
+	@$(ECHO) "$(COLOUR_ACTION)*     CREATE README: $(OUTDIR)/$(README)$(COLOUR_END)"
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
-	$(info *HTML MANUAL: $(OUTDIR)/$(HTMLHELP))
+	@$(ECHO) "$(COLOUR_ACTION)*       HTML MANUAL: $(OUTDIR)/$(HTMLHELP)$(COLOUR_END)"
 	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
@@ -211,18 +210,18 @@ endif
 # Build the release Zip file.
 
 release: clean all
-	$(info *ZIPPING RELEASE: $(ZIPFILE))
+	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING RELEASE: $(ZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(ZIPFILE)
 	@(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
-	$(info *ZIPPING PACKAGE: $(PKGZIPFILE))
+	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING PACKAGE: $(PKGZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/package/Apps/Misc/*
 	@(cd $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
 	@(cd $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
 endif
-	$(info *ZIPPING SOURCE: $(SRCZIPFILE))
+	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING SOURCE: $(SRCZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) Makefile
 
@@ -230,7 +229,7 @@ endif
 # Build a backup Zip file
 
 backup:
-	$(info *ZIPPING BACKUP: $(BUZIPFILE))
+	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING BACKUP: $(BUZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(BUZIPFILE)
 	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
@@ -238,6 +237,7 @@ backup:
 # Clean targets
 
 clean:
+	@$(ECHO) "$(COLOUR_ACTION)*          CLEANING$(COLOUR_END)"
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
