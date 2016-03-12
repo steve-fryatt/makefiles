@@ -45,6 +45,8 @@ HTMLHELP ?=
 README ?= ReadMe,fff
 LICENSE ?= Licence,fff
 ADDITIONS ?=
+EXTRASRC ?=
+EXTRAPREREQ ?=
 
 # Set up the source files.
 
@@ -141,7 +143,7 @@ all: application documentation
 
 # Build the application and its supporting binary files.
 
-application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
+application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(EXTRAPREREQ)
 
 # Build the complete !RunImage from the object files.
 
@@ -205,7 +207,7 @@ ifneq ($(PACKAGE),)
 endif
 	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING SOURCE: $(SRCZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(SRCZIPFILE)
-	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) Makefile
+	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) $(EXTRASRC)
 
 
 # Build a backup Zip file
@@ -218,7 +220,7 @@ backup:
 
 # Clean targets
 
-clean:
+clean::
 	@$(ECHO) "$(COLOUR_ACTION)*          CLEANING$(COLOUR_END)"
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
