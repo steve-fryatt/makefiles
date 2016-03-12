@@ -91,7 +91,7 @@ MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 
 # Build Flags
 
-CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
+CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-aliasing -mpoke-function-name
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
@@ -164,8 +164,8 @@ $(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@$(ECHO) "$(COLOUR_ACTION)*         COMPILING: $<$(COLOUR_END)"
 	@$(MKDIR) $(@D)
-	@$(CC) -c $(CCFLAGS) $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) $(INCLUDES) $< > $(@:.o=.d)
+	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< > $(@:.o=.d)
 	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
 	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
