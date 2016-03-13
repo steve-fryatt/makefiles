@@ -72,6 +72,7 @@ PKGDIR := package
 
 INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
 LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32 -lSFLib32 -lFlexLib32
+SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokSWIs.h
 
 # Build Tools
 
@@ -91,14 +92,14 @@ MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 
 # Build Flags
 
-CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-aliasing -mpoke-function-name
+CCFLAGS += -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-aliasing -mpoke-function-name
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
-TOKENIZEFLAGS := -warn p
+TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
 
 # Set up escape sequences for colouring terminal output.
 

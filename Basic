@@ -69,6 +69,7 @@ PKGDIR := package
 
 # Includes and libraries.
 
+SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokSWIs.h
 LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 
 # Build Tools
@@ -94,11 +95,12 @@ PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS :=
-TOKENIZEFLAGS := -verbose -crunch EIrW -warn pV -swi -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokSWIs.h
+TOKENIZEFLAGS += -verbose -warn pV -swi $(SWIDEFS)
+FULLTOKFLAGS := $(TOKENIZEFLAGS) -crunch EIrW
 
 # Set up escape sequences for colouring terminal output.
 
-COLOUR_ACTION := \033[1;34m
+COLOUR_ACTION := \033[1;32m
 COLOUR_END := \033[0m
 
 # The build date.
@@ -151,7 +153,7 @@ SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
 	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(RUNIMAGE)$(COLOUR_END)"
-	@$(TOKENIZE) $(TOKENIZEFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
 
 # Build the menus file.
 
@@ -167,7 +169,7 @@ documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP)$(COLOUR_END)"
-	@$(TOKENIZE) $(TOKENIZEFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
+	@$(TOKENIZE) $(TOKENIZEFLAGS) $(SWIDEFS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)$(COLOUR_END)"
