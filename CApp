@@ -80,6 +80,7 @@ ECHO := echo
 MKDIR := mkdir -p
 RM := rm -rf
 CP := cp
+CD := cd
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
@@ -217,14 +218,14 @@ endif
 release: clean all
 	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING RELEASE: $(ZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(ZIPFILE)
-	@(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING PACKAGE: $(PKGZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/package/Apps/Misc/*
-	@(cd $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
+	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
-	@(cd $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
 endif
 	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING SOURCE: $(SRCZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(SRCZIPFILE)
