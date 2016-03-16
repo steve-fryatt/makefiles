@@ -47,6 +47,7 @@ LICENSE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
@@ -163,7 +164,7 @@ $(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
 
 -include $(OBJS:.o=.d)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
 	@$(ECHO) "$(COLOUR_ACTION)*         COMPILING: $<$(COLOUR_END)"
 	@$(MKDIR) $(@D)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< -o $@
@@ -183,7 +184,7 @@ endif
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP), $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP), $(OUTDIR)/$(HTMLHELP))
+documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP)$(COLOUR_END)"
