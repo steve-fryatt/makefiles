@@ -34,12 +34,15 @@
 
 ARCHIVE ?= application
 PACKAGE ?=
+APP ?=
 MODULE ?= Module,ffa
-README := ReadMe,fff
-LICENSE := Licence,fff
+TEXTHELP ?= !Help,fff
+README ?= ReadMe,fff
+LICENSE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
@@ -128,43 +131,47 @@ all: application documentation
 
 # Build the application and its supporting binary files.
 
-application: $(OUTDIR)/$(MODULE) $(EXTRAPREREQ)
+application: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(EXTRAPREREQ)
 
 # Build the complete Module from the object files.
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(MODULE): $(OBJS)
-	@$(ECHO) "$(COLOUR_ACTION)*         STRIPPING: $(OUTDIR)/$(APP)/$(MODULE)$(COLOUR_END)"
-	@$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(MODULE) $(OBJS)
-
-# Create a folder to hold the object files.
-
-$(OBJDIR):
-	$(MKDIR) $(OBJDIR)
+$(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS)
+	@$(ECHO) "$(COLOUR_ACTION)*         STRIPPING: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE)$(COLOUR_END)"
+	@$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(OBJS)
 
 # Build the object files, and identify their dependencies.
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.s
+$(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 	@$(ECHO) "$(COLOUR_ACTION)*        ASSEMBLING: $<$(COLOUR_END)"
 	@$(MKDIR) $(@D)
 	@$(AS) $(ASFLAGS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(README)
+documentation: $(OUTDIR)/$(README) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 
+ifneq ($(and $(APP),$(TEXTHELP)),)
+$(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
+	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(APP)/$(TEXTHELP)$(COLOUR_END)"
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+
+$(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
+	@$(ECHO) "$(COLOUR_ACTION)*     CREATE README: $(OUTDIR)/$(README)$(COLOUR_END)"
+	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
+else
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(README)$(COLOUR_END)"
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-
+endif
 
 # Build the release Zip file.
 
 release: clean all
 	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING RELEASE: $(ZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(ZIPFILE)
-	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(MODULE) $(README) $(LICENSE) $(ADDITIONS))
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(if $(APP),$(APP),$(MODULE)) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING PACKAGE: $(PKGZIPFILE)$(COLOUR_END)"
 	@$(RM) ../$(PKGZIPFILE)
@@ -188,9 +195,16 @@ backup:
 
 # Clean targets
 
-clean:
+clean::
 	@$(ECHO) "$(COLOUR_ACTION)*          CLEANING$(COLOUR_END)"
 	$(RM) $(OBJDIR)/*
+ifneq ($(APP),)
+	$(RM) $(OUTDIR)/$(APP)/$(MODULE)
+ifneq ($(TEXTHELP),)
+	$(RM) $(OUTDIR)/$(APP)/$(TEXTHELP)
+endif
+else
 	$(RM) $(OUTDIR)/$(MODULE)
+endif
 	$(RM) $(OUTDIR)/$(README)
 
