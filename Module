@@ -59,6 +59,10 @@ MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
 
+# Set up additional build options
+
+ASOPTIONS ?=
+
 # Build Tools
 
 AS := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*asasm)
@@ -146,7 +150,7 @@ $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 	@$(ECHO) "$(COLOUR_ACTION)*        ASSEMBLING: $<$(COLOUR_END)"
 	@$(MKDIR) $(@D)
-	@$(AS) $(ASFLAGS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
 # Build the documentation
 
