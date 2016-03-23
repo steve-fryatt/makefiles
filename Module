@@ -155,7 +155,8 @@ $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 	@$(call show-stage,ASSEMBLING,$<)
 	@$(MKDIR) $(@D)
-	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' \
+			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
 # Build the documentation
 
@@ -164,7 +165,8 @@ documentation: $(OUTDIR)/$(README) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 ifneq ($(and $(APP),$(TEXTHELP)),)
 $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
 	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
@@ -172,7 +174,8 @@ $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
 else
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 # Build the release Zip file.

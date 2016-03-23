@@ -159,7 +159,8 @@ SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
-	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) \
+		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
 
 # Build the menus file.
 
@@ -171,7 +172,8 @@ endif
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
@@ -179,7 +181,8 @@ $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 ifneq ($(SHHELP),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
@@ -197,7 +200,8 @@ $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 
