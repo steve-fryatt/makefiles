@@ -68,6 +68,7 @@ ASOPTIONS ?=
 AS := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*asasm)
 STRIP := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*strip)
 ECHO := echo
+PRINTF := printf
 CC := gcc
 MKDIR := mkdir -p
 RM := rm -rf
@@ -125,6 +126,10 @@ SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(shell date "+%Y%m%d").zip
 
+# Provide a means of reporting progress.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
 # Inform the user what we're about to do.
 
 $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
@@ -142,13 +147,13 @@ application: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(EXTRAPREREQ)
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
 $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS)
-	@$(ECHO) "$(COLOUR_ACTION)*         STRIPPING: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE)$(COLOUR_END)"
+	@$(call show-stage,STRIPPING,$(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE))
 	@$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(OBJS)
 
 # Build the object files, and identify their dependencies.
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
-	@$(ECHO) "$(COLOUR_ACTION)*        ASSEMBLING: $<$(COLOUR_END)"
+	@$(call show-stage,ASSEMBLING,$<)
 	@$(MKDIR) $(@D)
 	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
@@ -158,33 +163,33 @@ documentation: $(OUTDIR)/$(README) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 
 ifneq ($(and $(APP),$(TEXTHELP)),)
 $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(APP)/$(TEXTHELP)$(COLOUR_END)"
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
-	@$(ECHO) "$(COLOUR_ACTION)*     CREATE README: $(OUTDIR)/$(README)$(COLOUR_END)"
+	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 else
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(README)$(COLOUR_END)"
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 # Build the release Zip file.
 
 release: clean all
-	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING RELEASE: $(ZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
 	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(if $(APP),$(APP),$(MODULE)) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
-	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING PACKAGE: $(PKGZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/package/Apps/Misc/*
 	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
 	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
 endif
-	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING SOURCE: $(SRCZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MANUAL) $(EXTRASRC)
 
@@ -192,7 +197,7 @@ endif
 # Build a backup Zip file
 
 backup:
-	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING BACKUP: $(BUZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
 	@$(RM) ../$(BUZIPFILE)
 	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
@@ -200,7 +205,7 @@ backup:
 # Clean targets
 
 clean::
-	@$(ECHO) "$(COLOUR_ACTION)*          CLEANING$(COLOUR_END)"
+	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 ifneq ($(APP),)
 	$(RM) $(OUTDIR)/$(APP)/$(MODULE)

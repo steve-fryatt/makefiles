@@ -75,6 +75,7 @@ LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 # Build Tools
 
 ECHO := echo
+PRINTF := printf
 MKDIR := mkdir
 RM := rm -rf
 CP := cp
@@ -136,6 +137,10 @@ SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(shell date "+%Y%m%d").zip
 
+# Provide a means of reporting progress.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
 # Inform the user what we're about to do.
 
 $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
@@ -153,14 +158,14 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(E
 SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
-	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(RUNIMAGE)$(COLOUR_END)"
+	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) -path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
 
 # Build the menus file.
 
 ifneq ($(MENUS),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*        MAKE MENUS: $(MENUDIR)/$(MENUSRC)$(COLOUR_END)"
+	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
 	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
 endif
 
@@ -169,16 +174,16 @@ endif
 documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*        TOKENIZING: $(OUTDIR)/$(APP)/$(FINDHELP)$(COLOUR_END)"
+	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
 	@$(TOKENIZE) $(TOKENIZEFLAGS) $(SWIDEFS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*       TEXT MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)$(COLOUR_END)"
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
 ifneq ($(SHHELP),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
-	@$(ECHO) "$(COLOUR_ACTION)* STRONGHELP MANUAL: $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)$(COLOUR_END)"
+	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
 	@$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
 	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
@@ -186,12 +191,12 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
 endif
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
-	@$(ECHO) "$(COLOUR_ACTION)*     CREATE README: $(OUTDIR)/$(README)$(COLOUR_END)"
+	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
-	@$(ECHO) "$(COLOUR_ACTION)*       HTML MANUAL: $(OUTDIR)/$(HTMLHELP)$(COLOUR_END)"
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
@@ -199,18 +204,18 @@ endif
 # Build the release Zip file.
 
 release: clean all
-	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING RELEASE: $(ZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
 	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
-	@$(ECHO) "$(COLOUR_ACTION)*   ZIPPING PACKAGE: $(PKGZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/package/Apps/Misc/*
 	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
 	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
 endif
-	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING SOURCE: $(SRCZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) $(EXTRASRC)
 
@@ -218,7 +223,7 @@ endif
 # Build a backup Zip file
 
 backup:
-	@$(ECHO) "$(COLOUR_ACTION)*    ZIPPING BACKUP: $(BUZIPFILE)$(COLOUR_END)"
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
 	@$(RM) ../$(BUZIPFILE)
 	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
@@ -226,7 +231,7 @@ backup:
 # Clean targets
 
 clean::
-	@$(ECHO) "$(COLOUR_ACTION)*          CLEANING$(COLOUR_END)"
+	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
