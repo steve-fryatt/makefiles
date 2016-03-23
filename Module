@@ -58,6 +58,7 @@ SRCDIR := src
 MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
+PKGDIR := package
 
 # Set up additional build options
 
@@ -79,6 +80,8 @@ MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
 MENUGEN := $(SFTOOLS_BIN)/menugen
+GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
+MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 
 # Build Flags
 
@@ -177,6 +180,7 @@ $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
+
 
 # Build the release Zip file.
 
