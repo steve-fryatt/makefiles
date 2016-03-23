@@ -47,6 +47,7 @@ LICENSE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
@@ -157,7 +158,7 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(E
 
 SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
-$(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS)
+$(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) \
 		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
