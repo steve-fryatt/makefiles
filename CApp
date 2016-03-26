@@ -111,26 +111,26 @@ COLOUR_END := \033[0m
 
 # The build date.
 
-BUILD_DATE = $(shell date "+%d %b %Y")
-HELP_DATE = $(shell date "+%-d %B %Y")
-FILE_DATE = $(shell date "+%Y%m%d")
+BUILD_DATE := $(shell date "+%d %b %Y")
+HELP_DATE := $(shell date "+%-d %B %Y")
+FILE_DATE := $(shell date "+%Y%m%d")
 
 # Construct version or revision information.
 
 ifeq ($(VERSION),)
-  RELEASE = $(shell svnversion --no-newline)
+  RELEASE := $(shell svnversion --no-newline)
   VERSION := r$(RELEASE)
   RELEASE := $(subst :,-,$(RELEASE))
   HELP_VERSION := ----
 ifneq ($(PACKAGE),)
   PACKAGE := $(PACKAGE)Unstable
-  PKG_VERSION = $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
 endif
 else
   RELEASE := $(subst .,,$(VERSION))
   HELP_VERSION := $(VERSION)
 ifneq ($(PACKAGE),)
-  PKG_VERSION = $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
 endif
 endif
 
