@@ -34,7 +34,7 @@
 
 ARCHIVE ?= library
 PACKAGE ?=
-LIBRARY := library.a
+LIBRARY ?= library.a
 INCFOLDER ?= library
 README ?= ReadMe,fff
 LICENSE ?= Licence,fff
