@@ -28,7 +28,7 @@
 #
 # Set VERSION to build using a version number and not an SVN revision.
 
-.PHONY: all clean application documentation debug release backup
+.PHONY: all clean application documentation release backup
 
 # Target Details
 
@@ -149,11 +149,6 @@ show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
 # Inform the user what we're about to do.
 
 $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
-
-# Build all but with debug enabled.
-
-debug: all
-CCFLAGS += -DDEBUG
 
 # Build everything, but don't package it for release.
 
