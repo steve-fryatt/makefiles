@@ -1,0 +1,245 @@
+# Copyright 2010-2018, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.1 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Shared Makefile for GCC-based Cross-Platform Utilities
+#
+# This file really needs to be run by GNUMake.
+# It is intended for native compilation on Linux (for use in a GCCSDK
+# environment) or cross-compilation under the GCCSDK.
+#
+# Set VERSION to build using a version number and not an SVN revision.
+
+.PHONY: all clean application documentation release backup install
+
+# Target Details
+
+ARCHIVE ?= utility
+PACKAGE ?=
+
+ifeq ($(TARGET),riscos)
+  RUNIMAGE ?= utility,ff8
+  README ?= ReadMe,fff
+  LICENSE ?= Licence,fff
+  ADDITIONS ?=
+else
+  RUNIMAGE := utility
+  README := ReadMe.txt
+  LICENSE := Licence.txt
+  ADDITIONS ?=
+endif
+
+EXTRASRC ?=
+EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
+
+# Set up the source files.
+
+MANSRC ?= Source
+PKGCTRL ?= Control
+
+OBJS ?= main.o
+
+# Set up the various build directories.
+
+SRCDIR := src
+MANUAL := manual
+OBJROOT := obj
+OBJLINUX := linux
+OBJRO := ro
+OUTDIRLINUX := buildlinux
+OUTDIRRO:= buildro
+ifeq ($(TARGET),riscos)
+  OBJDIR := $(OBJROOT)/$(OBJRO)
+  OUTDIR := $(OUTDIRRO)
+else
+  OBJDIR := $(OBJROOT)/$(OBJLINUX)
+  OUTDIR := $(OUTDIRLINUX)
+endif
+PKGDIR := package
+
+# Includes and libraries.
+
+ifeq ($(TARGET),riscos)
+  INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
+  LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32
+else
+  INCLUDES := -I/usr/include/libxml2
+  LINKS := -lxml2
+endif
+
+# Build Tools
+
+ECHO := echo
+PRINTF := printf
+MKDIR := mkdir -p
+RM := rm -rf
+CP := cp
+CD := cd
+
+ifeq ($(TARGET),riscos)
+  CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
+else
+  CC := gcc
+endif
+
+ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+MANTOOLS := $(SFTOOLS_BIN)/mantools
+GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
+MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+
+# Build Flags
+
+ifeq ($(TARGET),riscos)
+  CCFLAGS += -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'RISCOS' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
+  ZIPFLAGS := -x "*/.svn/*" -r -, -9
+else
+  CCFLAGS += -Wall -g -O2 -fno-strict-aliasing -rdynamic -D'LINUX' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"'
+  ZIPFLAGS := -x "*/.svn/*" -r -9
+endif
+PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
+SRCZIPFLAGS := -x "*/.svn/*" -r -9
+BUZIPFLAGS := -x "*/.svn/*" -r -9
+
+# Set up escape sequences for colouring terminal output.
+
+COLOUR_ACTION := \033[1;32m
+COLOUR_END := \033[0m
+
+# The build date.
+
+BUILD_DATE := $(shell date "+%d %b %Y")
+HELP_DATE := $(shell date "+%-d %B %Y")
+FILE_DATE := $(shell date "+%Y%m%d")
+
+# Construct version or revision information.
+
+ifeq ($(VERSION),)
+  RELEASE := $(shell svnversion --no-newline)
+  VERSION := r$(RELEASE)
+  RELEASE := $(subst :,-,$(RELEASE))
+  HELP_VERSION := ----
+ifneq ($(PACKAGE),)
+  PACKAGE := $(PACKAGE)Unstable
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+endif
+else
+  RELEASE := $(subst .,,$(VERSION))
+  HELP_VERSION := $(VERSION)
+ifneq ($(PACKAGE),)
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+endif
+endif
+
+# The archives to assemble the release files, sources and backups in.
+# If $(RELEASE) is set, then the file can be given a version number suffix.
+
+ZIPFILE := $(ARCHIVE)$(RELEASE).zip
+SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
+PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
+BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
+
+# Provide a means of reporting progress.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
+# Inform the user what we're about to do.
+
+$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
+
+# Build everything, but don't package it for release.
+
+all: application documentation
+
+# Build the application and its supporting binary files.
+
+application: $(OUTDIR)/$(RUNIMAGE) $(EXTRAPREREQ)
+
+# Build the complete !RunImage from the object files.
+
+OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
+
+$(OUTDIR)/$(RUNIMAGE): $(OBJS)
+	@$(call show-stage,LINKING,$(OUTDIR)/$(RUNIMAGE))
+	@$(CC) $(CCFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS) $(LINKS)
+
+# Build the object files, and identify their dependencies.
+
+-include $(OBJS:.o=.d)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
+	@$(call show-stage,COMPILING,$<)
+	@$(MKDIR) $(@D)
+	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< > $(@:.o=.d)
+	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
+	@rm -f $(@:.o=.d).tmp
+
+# Build the documentation
+
+documentation: $(OUTDIR)/$(README)
+
+$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+
+# Build the release Zip file.
+
+release: clean all
+	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
+	@$(RM) ../$(ZIPFILE)
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(RUNIMAGE) $(README) $(LICENSE) $(ADDITIONS))
+ifneq ($(PACKAGE),)
+	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
+	@$(RM) ../$(PKGZIPFILE)
+	@$(RM) $(OUTDIR)/package/Apps/Misc/*
+	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
+	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+endif
+	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
+	@$(RM) ../$(SRCZIPFILE)
+	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIRLINUX) $(OUTDIRRO) $(SRCDIR) $(MANUAL) $(EXTRASRC)
+
+# Build a backup Zip file
+
+backup:
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
+	@$(RM) ../$(BUZIPFILE)
+	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+
+# Install the finished version in the GCCSDK, ready for use.
+
+install: clean all
+	@$(call show-stage,INSTALLING,$(SFTOOLS_BIN))
+	$(CP) -r $(OUTDIR)/$(RUNIMAGE) $(SFTOOLS_BIN)
+
+# Clean targets
+
+clean::
+	@$(call show-stage,CLEANING,)
+	$(RM) $(OBJDIR)/*
+	$(RM) $(OUTDIR)/$(RUNIMAGE)
+	$(RM) $(OUTDIR)/$(README)
+
