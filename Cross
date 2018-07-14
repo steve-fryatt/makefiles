@@ -41,9 +41,9 @@ ifeq ($(TARGET),riscos)
   LICENSE ?= Licence,fff
   ADDITIONS ?=
 else
-  RUNIMAGE := utility
-  README := ReadMe.txt
-  LICENSE := Licence.txt
+  RUNIMAGE ?= utility
+  README ?= ReadMe.txt
+  LICENSE ?= Licence.txt
   ADDITIONS ?=
 endif
 
