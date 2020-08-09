@@ -50,6 +50,8 @@ EXTRASRCPREREQ ?=
 MANSRC ?= Source
 MANSPR ?= ManSprite
 READMEHDR ?= Header
+PKGCTRL ?= Control
+PKGCPY ?= Copyright
 
 OBJS ?= Source.o
 

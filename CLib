@@ -48,6 +48,7 @@ MANSRC ?= Source
 MANSRCNC ?= Norcroft
 MANSPR ?= ManSprite
 PKGCTRL ?= Control
+PKGCPY ?= Copyright
 
 OBJS ?= library.0
 

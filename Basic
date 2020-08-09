@@ -58,6 +58,7 @@ READMEHDR ?= Header
 MENUSRC ?= menudef
 FINDHELPSRC ?= Help.bbt
 PKGCTRL ?= Control
+PKGCPY ?= Copyright
 
 SRCS ?= AppSrc.bbt
 
@@ -125,7 +126,7 @@ ifeq ($(VERSION),)
   RELEASE := $(subst :,-,$(RELEASE))
   HELP_VERSION := ----
 ifneq ($(PACKAGE),)
-  PACKAGE = $(PACKAGE)Unstable
+  PACKAGE := $(PACKAGE)Unstable
   PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
 endif
 else
