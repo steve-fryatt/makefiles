@@ -1,4 +1,4 @@
-# Copyright 2010-2018, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2010-2020, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -34,6 +34,7 @@
 
 ARCHIVE ?= utility
 PACKAGE ?=
+PACKAGELOC ?= Misc
 
 ifeq ($(TARGET),riscos)
   RUNIMAGE ?= utility,ff8
@@ -75,6 +76,8 @@ else
   OUTDIR := $(OUTDIRLINUX)
 endif
 PKGDIR := package
+PKGTREEDIR := Apps
+PKGCTRLDIR := RiscPkg
 
 # Includes and libraries.
 
@@ -94,6 +97,7 @@ MKDIR := mkdir -p
 RM := rm -rf
 CP := cp
 CD := cd
+RSYNC := rsync
 
 ifeq ($(TARGET),riscos)
   CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
@@ -118,6 +122,7 @@ endif
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
+PKGRSFLAGS := -av --exclude=*.svn*
 
 # Set up escape sequences for colouring terminal output.
 
@@ -213,10 +218,11 @@ release: clean all
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
-	@$(RM) $(OUTDIR)/package/Apps/Misc/*
-	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
-	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
-	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
+	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
@@ -242,4 +248,8 @@ clean::
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
-
+ifneq ($(PACKAGE),)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY)
+endif

@@ -1,4 +1,4 @@
-# Copyright 2010-2016, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2010-2020, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -34,6 +34,7 @@
 
 ARCHIVE ?= library
 PACKAGE ?=
+PACKAGELOC ?= Misc
 LIBRARY ?= library.a
 INCFOLDER ?= library
 README ?= ReadMe,fff
@@ -58,6 +59,8 @@ MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
 PKGDIR := package
+PKGTREEDIR := Apps
+PKGCTRLDIR := RiscPkg
 HDRDIR := sflib
 NORCROFTDIR := norcroft
 STRDUP := strdup
@@ -74,6 +77,7 @@ MKDIR := mkdir -p
 RM := rm -rf
 CP := cp
 CD := cd
+RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 AR := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*riscos-ar)
 INSTALL := install
@@ -92,6 +96,7 @@ CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-alias
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
+PKGRSFLAGS := -av --exclude=*.svn*
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
@@ -225,10 +230,11 @@ release: clean all documentation
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
-	@$(RM) $(OUTDIR)/package/Apps/Misc/*
-	@($(CD) $(OUTDIR) ; rsync -av --exclude=*.svn* $(APP) package/Apps/Misc/ )
-	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/package/RiscPkg/Control --version $(PKG_VERSION)
-	@($(CD) $(OUTDIR)/package ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) Apps RiscPkg Sprites SysVars)
+	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
+	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
@@ -265,4 +271,8 @@ clean::
 	@$(RM) $(NORCROFTDIR)/c/*
 	@$(RM) $(NORCROFTDIR)/h/*
 	@$(RM) $(NORCROFTDIR)/$(README)
-
+ifneq ($(PACKAGE),)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY)
+endif
