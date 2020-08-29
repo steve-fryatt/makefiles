@@ -94,6 +94,7 @@ MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 ASFLAGS :=
 STRIPFLAGS := -O binary
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
+PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
