@@ -109,6 +109,7 @@ BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
+HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
 # Set up escape sequences for colouring terminal output.
 
@@ -201,7 +202,7 @@ documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
-	@$(TOKENIZE) $(TOKENIZEFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
+	@$(TOKENIZE) $(HELPTOKFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))

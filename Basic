@@ -105,6 +105,7 @@ PKGRSFLAGS := -av --exclude=*.svn*
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS :=
 TOKENIZEFLAGS += -verbose -warn pV -swi $(SWIDEFS)
+HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 FULLTOKFLAGS := $(TOKENIZEFLAGS) -crunch EIrW
 
 # Set up escape sequences for colouring terminal output.
@@ -185,7 +186,7 @@ documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
-	@$(TOKENIZE) $(TOKENIZEFLAGS) $(SWIDEFS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
+	@$(TOKENIZE) $(HELPTOKFLAGS) $(SWIDEFS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))

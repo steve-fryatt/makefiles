@@ -102,6 +102,7 @@ BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
+HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
 # Set up escape sequences for colouring terminal output.
 
