@@ -39,7 +39,7 @@ APP ?=
 MODULE ?= Module,ffa
 TEXTHELP ?= !Help,fff
 README ?= ReadMe,fff
-LICENSE ?= Licence,fff
+LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -52,6 +52,7 @@ MANSPR ?= ManSprite
 READMEHDR ?= Header
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
+LICSRC ?= Licence
 
 OBJS ?= Source.o
 
@@ -172,7 +173,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(README) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
+documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 
 ifneq ($(and $(APP),$(TEXTHELP)),)
 $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
@@ -190,20 +191,24 @@ $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
 
 # Build the release Zip file.
 
 release: clean all
 	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
-	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(if $(APP),$(APP),$(MODULE)) $(README) $(LICENSE) $(ADDITIONS))
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(if $(APP),$(APP),$(MODULE)) $(README) $(LICENCE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
 	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(if $(APP),$(APP),$(MODULE)) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
-	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
 	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
@@ -233,6 +238,7 @@ else
 	$(RM) $(OUTDIR)/$(MODULE)
 endif
 	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)

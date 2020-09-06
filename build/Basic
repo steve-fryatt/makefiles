@@ -44,7 +44,7 @@ TEXTHELP ?= HelpText,fff
 SHHELP ?=
 HTMLHELP ?=
 README ?= ReadMe,fff
-LICENSE ?= Licence,fff
+LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -59,6 +59,7 @@ MENUSRC ?= menudef
 FINDHELPSRC ?= Help.bbt
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
+LICSRC ?= Licence
 
 SRCS ?= AppSrc.bbt
 
@@ -181,7 +182,7 @@ endif
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
@@ -213,20 +214,24 @@ $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
 
 # Build the release Zip file.
 
 release: clean all
 	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
-	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENSE) $(ADDITIONS))
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENCE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
 	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
-	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
 	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
@@ -250,6 +255,7 @@ clean:
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
 	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(MENUS),)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
 endif

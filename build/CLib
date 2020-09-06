@@ -38,7 +38,7 @@ PACKAGELOC ?= Misc
 LIBRARY ?= library.a
 INCFOLDER ?= library
 README ?= ReadMe,fff
-LICENSE ?= Licence,fff
+LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 
@@ -49,6 +49,7 @@ MANSRCNC ?= Norcroft
 MANSPR ?= ManSprite
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
+LICSRC ?= Licence
 
 OBJS ?= library.0
 
@@ -221,13 +222,17 @@ $(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRCNC) -O$(NORCROFTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
 
 # Build the release Zip file.
 
 release: clean all documentation
 	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
-	@(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(LIBRARY) $(HDRDIR) $(README) $(LICENSE) $(ADDITIONS))
+	@(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(LIBRARY) $(HDRDIR) $(README) $(LICENCE) $(ADDITIONS))
 	@(cd $(MANUAL) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) html)
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
@@ -235,7 +240,7 @@ ifneq ($(PACKAGE),)
 	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
 	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
-	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
 	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
@@ -270,6 +275,7 @@ clean:
 	@$(RM) $(OUTDIR)/$(LIBRARY)
 	@$(RM) $(OUTDIR)/$(HDRDIR)/*
 	@$(RM) $(OUTDIR)/$(README)
+	@$(RM) $(OUTDIR)/$(LICENCE)
 	@$(RM) $(NORCROFTDIR)/c/*
 	@$(RM) $(NORCROFTDIR)/h/*
 	@$(RM) $(NORCROFTDIR)/$(README)

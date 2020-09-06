@@ -39,12 +39,12 @@ PACKAGELOC ?= Misc
 ifeq ($(TARGET),riscos)
   RUNIMAGE ?= utility,ff8
   README ?= ReadMe,fff
-  LICENSE ?= Licence,fff
+  LICENCE ?= Licence,fff
   ADDITIONS ?=
 else
   RUNIMAGE ?= utility
   README ?= ReadMe.txt
-  LICENSE ?= Licence.txt
+  LICENCE ?= Licence.txt
   ADDITIONS ?=
 endif
 
@@ -57,6 +57,7 @@ EXTRASRCPREREQ ?=
 MANSRC ?= Source
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
+LICSRC ?= Licence
 
 OBJS ?= main.o
 
@@ -203,26 +204,30 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(README)
+documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE)
 
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
 # Build the release Zip file.
 
 release: clean all
 	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
 	@$(RM) ../$(ZIPFILE)
-	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(RUNIMAGE) $(README) $(LICENSE) $(ADDITIONS))
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(RUNIMAGE) $(README) $(LICENCE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
 	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
 	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
-	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENSE) $(PKGDIR)/$(PKGCPY) 5
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
 	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
 endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
@@ -249,6 +254,7 @@ clean:
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
