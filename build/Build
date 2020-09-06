@@ -1,0 +1,207 @@
+# Copyright 2013-2020, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Shared Makefile for GCCSDK-based build tools
+#
+# This file really needs to be run by GNUMake.
+# It is intended for native compilation on Linux (for use in a GCCSDK
+# environment) or cross-compilation under the GCCSDK.
+#
+# Set VERSION to build using a version number and not an SVN revision.
+
+.PHONY: all clean documentation release install backup
+
+# Target Details
+
+ARCHIVE ?= tools
+PACKAGE ?=
+PACKAGELOC ?= Misc
+EXECUTABLES ?= Tools
+README ?= ReadMe,fff
+LICENCE ?= Licence,fff
+ADDITIONS ?=
+EXTRASRC ?=
+EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
+SUFFIX ?=
+TARGETFOLDER ?=
+
+# Set up the source files.
+
+MANSRC ?= Source
+MANSPR ?= ManSprite
+PKGCTRL ?= Control
+PKGCPY ?= Copyright
+LICSRC ?= Licence
+
+# Set up the various build directories.
+
+MANUAL := manual
+OUTDIR := build
+PKGDIR := package
+PKGTREEDIR := Apps
+PKGCTRLDIR := RiscPkg
+
+# Build Tools
+
+ECHO := echo
+PRINTF := printf
+MKDIR := mkdir -p
+RM := rm -rf
+CP := cp
+CD := cd
+RSYNC := rsync
+ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
+BINDHELP := $(SFTOOLS_BIN)/bindhelp
+TEXTMERGE := $(SFTOOLS_BIN)/textmerge
+MENUGEN := $(SFTOOLS_BIN)/menugen
+GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
+MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+
+# Build Flags
+
+ZIPFLAGS := -x "*/.svn/*" -r -, -9
+PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
+SRCZIPFLAGS := -x "*/.svn/*" -r -9
+BUZIPFLAGS := -x "*/.svn/*" -r -9
+PKGRSFLAGS := -av --exclude=*.svn*
+BINDHELPFLAGS := -f -r -v
+
+# Set up escape sequences for colouring terminal output.
+
+COLOUR_ACTION := \033[1;32m
+COLOUR_END := \033[0m
+
+# The build date.
+
+BUILD_DATE := $(shell date "+%d %b %Y")
+HELP_DATE := $(shell date "+%-d %B %Y")
+FILE_DATE := $(shell date "+%Y%m%d")
+
+# Construct version or revision information.
+
+ifeq ($(VERSION),)
+  RELEASE := $(shell svnversion --no-newline)
+  VERSION := r$(RELEASE)
+  RELEASE := $(subst :,-,$(RELEASE))
+  HELP_VERSION := ----
+ifneq ($(PACKAGE),)
+  PACKAGE := $(PACKAGE)Unstable
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+endif
+else
+  RELEASE := $(subst .,,$(VERSION))
+  HELP_VERSION := $(VERSION)
+ifneq ($(PACKAGE),)
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+endif
+endif
+
+# The archives to assemble the release files, sources and backups in.
+# If $(RELEASE) is set, then the file can be given a version number suffix.
+
+ZIPFILE := $(ARCHIVE)$(RELEASE).zip
+SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
+PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
+BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
+
+# Provide a means of reporting progress.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
+# Inform the user what we're about to do.
+
+$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
+
+# Build everything, but don't package it for release.
+
+all: documentation
+
+# Build the documentation
+#
+# We skip the use of Mantools if they don't exist, as we could be working
+# with only a partial installation.
+
+documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
+
+$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+ifneq ($(MANTOOLS),)
+	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+else
+	@$(ECHO) ManTools not available: skipping manual build.
+endif
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
+
+# Build the release Zip file.
+
+release: clean all
+	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
+	@$(RM) ../$(ZIPFILE)
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(EXECUTABLES) $(README) $(LICENCE) $(ADDITIONS))
+ifneq ($(PACKAGE),)
+	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
+	@$(RM) ../$(PKGZIPFILE)
+	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
+	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(EXECUTABLES) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
+	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
+endif
+	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
+	@$(RM) ../$(SRCZIPFILE)
+	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MANUAL) $(EXTRASRC)
+
+
+# Build a backup Zip file
+
+backup:
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
+	@$(RM) ../$(BUZIPFILE)
+	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+
+
+# Install the finished version in the GCCSDK, ready for use.  It's not a striaghtforward
+# copy, as we need to strip the file extensions that are in build/ for the benefit
+# of the RISC OS target.
+
+install: clean all
+	@$(call show-stage,INSTALLING,$(TARGETFOLDER))
+	@$(MKDIR) $(TARGETFOLDER)
+	@for f in $(EXECUTABLES); do $(CP) $(OUTDIR)/$$f $(TARGETFOLDER)/$${f%$(SUFFIX)}; done
+
+# Clean targets
+
+clean:
+	@$(call show-stage,CLEANING,)
+	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(LICENCE)
+ifneq ($(PACKAGE),)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY)
+endif

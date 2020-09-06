@@ -1,0 +1,63 @@
+<document title="ManTools">
+<define name="version" value="">
+<define name="date" value="" length=30 align="right">
+
+
+
+
+<literal mode="Text">
+=============================================================================
+Shared MakeFiles - Common tools for cross-compiling              Version $$version$$
+
+(C) Stephen Fryatt, 2002-2020                  $$date$$
+=============================================================================
+</literal>
+
+
+
+
+
+<chapter title="License" file="License">
+
+<cite>Shared Makefiles</cite> are licensed under the EUPL, Version&nbsp;1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
+
+You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
+
+Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an &quot;<strong>as is</strong>&quot; basis, <strong>without warranties or conditions of any kind</strong>, either express or implied.
+
+See the Licence for the specific language governing permissions and limitations under the Licence.
+
+The source for <cite>ManTools</cite> can be found alongside this binary download, at <link ref="#url http://www.stevefryatt.org.uk/software">http://www.stevefryatt.org.uk/software</link>
+
+</chapter>
+
+
+
+
+
+<chapter title="Introduction" file="Introduction">
+
+<cite>The Shared Makefiles</cite> are a ...
+
+</chapter>
+
+
+
+
+
+<literal mode="Text">
+
+
+Updates and Contacting Me
+-------------------------
+
+  If you have any comments about the Shared Makefiles, or would like to
+  report any bugs that you find, you can email me at the address below.
+
+  Updates to the Shared Makefiles and more programs for RISC OS computers
+  can be found on my website at http://www.stevefryatt.org.uk/software/
+
+  Stephen Fryatt
+  email: steve@stevefryatt.org.uk
+</literal>
+
