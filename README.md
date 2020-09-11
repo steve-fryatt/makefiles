@@ -25,7 +25,7 @@ where the path is changed to suit your local settings and installation requireme
 
 from the root folder of the project, which will copy the necessary files in to the location indicated by `$SFTOOLS_MAKE`.
 
-To build the manual, Mantools must also have been installed. This msut be done *after* installing the Shared Makefiles; returning to the Shared Makefiles project and running
+To build the manual, Mantools must also have been installed. This must be done *after* installing the Shared Makefiles; returning to the Shared Makefiles project and running
 
 	make install
 
