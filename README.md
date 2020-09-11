@@ -19,19 +19,23 @@ It will also be necessary to ensure that the `SFTOOLS_MAKE` variable is set to a
 
 	export SFTOOLS_MAKE=/home/steve/sftools/make
 
-To install the Makefiles, use
+where the path is changed to suit your local settings and installation requirements. To install the Makefiles, use
 
 	make install
 
-from the root folder of the project, which will copy the necessary files in to `$SFTOOLS_MAKE`.
+from the root folder of the project, which will copy the necessary files in to the location indicated by `$SFTOOLS_MAKE`.
 
-To build the manual, Mantools must also have been installed. This msut be done *after* installing the Shared Makefiles; returning to the Shared Makefiles project and running `make install` again will cause the manual to be built if Mantools have been installed correctly.
+To build the manual, Mantools must also have been installed. This msut be done *after* installing the Shared Makefiles; returning to the Shared Makefiles project and running
+
+	make install
+
+again will cause the manual to be built if Mantools have been installed correctly.
 
 
 Licence
 -------
 
-Shared Makefiles are licensed under the EUPL, Version&nbsp;1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
+Shared Makefiles are licensed under the EUPL, Version 1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
 You may obtain a copy of the Licence at <http://joinup.ec.europa.eu/software/page/eupl>
 
