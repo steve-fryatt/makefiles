@@ -7,13 +7,13 @@ Common tools for cross-compiling RISC OS software.
 Introduction
 ------------
 
-The Shared Makefiles are a collection of Makefiles containing useful rules for building RISC OS software under the GCCSDK. They are required by RISC OS source code found amongst the adjacent repositories.
+The Shared Makefiles are a collection of Makefiles containing useful rules for building RISC OS software under the [GCCSDK](http://www.riscos.info/index.php/GCCSDK). They are required by RISC OS source code found amongst the adjacent repositories.
 
 
 Installation
 ------------
 
-To install and use the Shared Makefiles, it will be necessary to have suitable Linux system with a working installation of the GCCSDK.
+To install and use the Shared Makefiles, it will be necessary to have suitable Linux system with a working installation of the [GCCSDK](http://www.riscos.info/index.php/GCCSDK).
 
 It will also be necessary to ensure that the `SFTOOLS_MAKE` variable is set to a suitable location within the current environment. For example
 
@@ -33,7 +33,7 @@ Licence
 
 Shared Makefiles are licensed under the EUPL, Version&nbsp;1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-You may obtain a copy of the Licence at http://joinup.ec.europa.eu/software/page/eupl
+You may obtain a copy of the Licence at <http://joinup.ec.europa.eu/software/page/eupl>
 
 Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an "**as is**"; basis, **without warranties or conditions of any kind**, either express or implied.
 
