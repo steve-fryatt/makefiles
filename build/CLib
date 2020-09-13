@@ -152,7 +152,7 @@ $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) *
 
 # Build everything, but don't package it for release.
 
-all: $(OUTDIR)/$(README) library norcroft documentation
+all: $(OUTDIR)/$(README) library norcroft
 
 # Build the library and its supporting binary files.
 
