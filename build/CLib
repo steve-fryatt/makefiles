@@ -37,6 +37,7 @@ PACKAGE ?=
 PACKAGELOC ?= Misc
 LIBRARY ?= library.a
 INCFOLDER ?= library
+HDRDIR ?= library
 README ?= ReadMe,fff
 LICENCE ?= Licence,fff
 ADDITIONS ?=
@@ -63,7 +64,6 @@ OUTDIR := build
 PKGDIR := package
 PKGTREEDIR := Apps
 PKGCTRLDIR := RiscPkg
-HDRDIR := sflib
 NORCROFTDIR := norcroft
 STRDUP := strdup
 
@@ -152,7 +152,7 @@ $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) *
 
 # Build everything, but don't package it for release.
 
-all: $(OUTDIR)/$(README) library norcroft
+all: $(OUTDIR)/$(README) library norcroft documentation
 
 # Build the library and its supporting binary files.
 
@@ -162,9 +162,18 @@ library: headers $(OUTDIR)/$(LIBRARY)
 
 headers: $(OUTDIR)/$(HDRDIR) $(addprefix $(OUTDIR)/$(HDRDIR)/, $(OBJS:.o=.h))
 
+$(OUTDIR)/$(HDRDIR):
+	@$(MKDIR) $(OUTDIR)/$(HDRDIR)
+
 # Assemble the Norcroft version of the library
 
 norcroft: $(NORCROFTDIR)/c $(NORCROFTDIR)/h $(NORCROFTDIR)/$(README) $(addprefix $(NORCROFTDIR)/c/, $(OBJS:.o=) $(STRDUP)) $(addprefix $(NORCROFTDIR)/h/, $(OBJS:.o=) $(STRDUP))
+
+$(NORCROFTDIR)/c:
+	@$(MKDIR) $(NORCROFTDIR)/c
+
+$(NORCROFTDIR)/h:
+	@$(MKDIR) $(NORCROFTDIR)/h
 
 $(NORCROFTDIR)/c/%: $(SRCDIR)/%.c
 	@$(call show-stage,COPY NORCROFT,$@)
@@ -207,7 +216,7 @@ $(OUTDIR)/$(HDRDIR)/%.h: $(SRCDIR)/%.h
 
 # Build the documentation
 
-documentation:
+documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(NORCROFTDIR)/$(LICENCE)
 	@$(call show-stage,DOXYGEN,$(MANUAL)/Doxyfile)
 	@doxygen $(MANUAL)/Doxyfile
 
@@ -224,6 +233,10 @@ $(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
 $(OUTDIR)/$(LICENCE): $(LICSRC)
 	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
 	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
+$(NORCROFTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(NORCROFTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(NORCROFTDIR)/$(LICENCE)
 
 
 # Build the release Zip file.
@@ -278,6 +291,7 @@ clean:
 	@$(RM) $(NORCROFTDIR)/c/*
 	@$(RM) $(NORCROFTDIR)/h/*
 	@$(RM) $(NORCROFTDIR)/$(README)
+	@$(RM) $(NORCROFTDIR)/$(LICENCE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
