@@ -75,7 +75,7 @@ PKGCTRLDIR := RiscPkg
 
 # Includes and libraries.
 
-SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokSWIs.h
+SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokenizeSWIs.h
 LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 
 # Build Tools
