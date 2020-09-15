@@ -82,7 +82,7 @@ CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 AR := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*riscos-ar)
-INSTALL := install
+INSTALL := $(GCCSDK_INSTALL_ENV)/ro-install
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
@@ -275,8 +275,8 @@ install: clean all
 	@$(RM) $(GCCSDK_INSTALL_ENV)/lib/$(LIBRARY)
 	@$(RM) $(GCCSDK_INSTALL_ENV)/include/$(INCFOLDER)
 	@$(MKDIR) $(GCCSDK_INSTALL_ENV)/include/$(INCFOLDER)
-	@$(INSTALL) -t $(GCCSDK_INSTALL_ENV)/lib $(OUTDIR)/$(LIBRARY)
-	@$(INSTALL) -t $(GCCSDK_INSTALL_ENV)/include/$(INCFOLDER) $(SRCDIR)/*.h
+	@$(INSTALL) $(OUTDIR)/$(LIBRARY) $(GCCSDK_INSTALL_ENV)/lib
+	@$(INSTALL) $(SRCDIR)/*.h $(GCCSDK_INSTALL_ENV)/include/$(INCFOLDER)
 
 
 # Clean targets
