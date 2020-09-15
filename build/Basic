@@ -82,7 +82,7 @@ LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 
 ECHO := echo
 PRINTF := printf
-MKDIR := mkdir
+MKDIR := mkdir -p
 RM := rm -rf
 CP := cp
 CD := cd
@@ -226,6 +226,8 @@ release: clean all
 	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(APP) $(README) $(LICENCE) $(ADDITIONS))
 ifneq ($(PACKAGE),)
 	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
+	@$(MKDIR) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	@$(MKDIR) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)
 	@$(RM) ../$(PKGZIPFILE)
 	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
 	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
