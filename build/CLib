@@ -162,7 +162,7 @@ library: headers $(OUTDIR)/$(LIBRARY)
 
 headers: $(OUTDIR)/$(HDRDIR) $(addprefix $(OUTDIR)/$(HDRDIR)/, $(OBJS:.o=.h))
 
-$(OUTDIR)/$(HDRDIR):
+$(OUTDIR)/$(HDRDIR): $(OUTDIR)
 	@$(MKDIR) $(OUTDIR)/$(HDRDIR)
 
 # Assemble the Norcroft version of the library
@@ -174,6 +174,9 @@ $(NORCROFTDIR)/c:
 
 $(NORCROFTDIR)/h:
 	@$(MKDIR) $(NORCROFTDIR)/h
+
+$(OUTDIR):
+	@$(MKDIR) $(OUTDIR);
 
 $(NORCROFTDIR)/c/%: $(SRCDIR)/%.c
 	@$(call show-stage,COPY NORCROFT,$@)
@@ -189,7 +192,7 @@ $(NORCROFTDIR)/h/%: $(SRCDIR)/%.h
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(LIBRARY): $(OBJS)
+$(OUTDIR)/$(LIBRARY): $(OBJS) $(OUTDIR)
 	@$(call show-stage,ARCHIVING,$(OUTDIR)/$(LIBRARY))
 	@$(AR) -rcuv $(OUTDIR)/$(LIBRARY) $(OBJS)
 
@@ -220,7 +223,7 @@ documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE)
 	@$(call show-stage,DOXYGEN,$(MANUAL)/Doxyfile)
 	@doxygen $(MANUAL)/Doxyfile
 
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -230,7 +233,7 @@ $(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRCNC) -O$(NORCROFTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
-$(OUTDIR)/$(LICENCE): $(LICSRC)
+$(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)
 	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
 	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
 
