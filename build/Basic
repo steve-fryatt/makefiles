@@ -250,7 +250,7 @@ backup:
 
 # Clean targets
 
-clean:
+clean::
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
