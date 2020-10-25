@@ -154,11 +154,16 @@ all: application documentation
 
 application: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(EXTRAPREREQ)
 
+# Create the build folder.
+
+$(OUTDIR):
+	$(MKDIR) $(OUTDIR)
+
 # Build the complete Module from the object files.
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS)
+$(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS) $(OUTDIR)
 	@$(call show-stage,STRIPPING,$(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE))
 	@$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(OBJS)
 
@@ -175,22 +180,22 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 
 ifneq ($(and $(APP),$(TEXTHELP)),)
-$(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 
-$(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
+$(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) $(OUTDIR)
 	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 else
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
-$(OUTDIR)/$(LICENCE): $(LICSRC)
+$(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)
 	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
 	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
 
