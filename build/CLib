@@ -119,7 +119,7 @@ FILE_DATE := $(shell date "+%Y%m%d")
 # Construct version or revision information.
 
 ifeq ($(VERSION),)
-  RELEASE := $(shell git describe --always)
+  RELEASE := $(shell git rev-parse --short=7 HEAD)
   VERSION := $(RELEASE)
   HELP_VERSION := ----
 ifneq ($(PACKAGE),)
