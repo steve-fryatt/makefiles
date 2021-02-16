@@ -87,8 +87,8 @@ ifeq ($(TARGET),riscos)
   INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
   LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32
 else
-  INCLUDES := -I/usr/include/libxml2
-  LINKS := -lxml2
+  INCLUDES := 
+  LINKS := 
 endif
 
 # Build Tools
