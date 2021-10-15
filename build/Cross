@@ -183,7 +183,7 @@ application: $(OUTDIR)/$(RUNIMAGE) $(EXTRAPREREQ)
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(RUNIMAGE): $(OBJS)
+$(OUTDIR)/$(RUNIMAGE): $(OUTDIR) $(OBJDIR) $(OBJS)
 	@$(call show-stage,LINKING,$(OUTDIR)/$(RUNIMAGE))
 	@$(CC) $(CCFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS) $(LINKS)
 
@@ -200,6 +200,16 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
 	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
 	@rm -f $(@:.o=.d).tmp
+
+# Create a folder to hold the object files.
+
+$(OBJDIR):
+	$(MKDIR) $(OBJDIR)
+
+# Create a folder to take the output.
+
+$(OUTDIR):
+	$(MKDIR) $(OUTDIR)
 
 # Build the documentation
 
