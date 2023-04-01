@@ -116,7 +116,7 @@ FILE_DATE := $(shell date "+%Y%m%d")
 
 ifeq ($(VERSION),)
   RELEASE := $(shell git rev-parse --short=7 HEAD)
-  VERSION := $(RELEASE)
+  override VERSION := $(RELEASE)
   HELP_VERSION := ----
 ifneq ($(PACKAGE),)
   PACKAGE := $(PACKAGE)Unstable
