@@ -45,6 +45,7 @@ SHHELP ?=
 HTMLHELP ?=
 README ?= ReadMe,fff
 LICENCE ?= Licence,fff
+SUBS ?=
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -70,6 +71,7 @@ MENUDIR := menus
 MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
+SUBDIR := subs
 PKGDIR := package
 PKGTREEDIR := Apps
 PKGCTRLDIR := RiscPkg
@@ -89,6 +91,7 @@ RM := rm -rf
 CP := cp
 CD := cd
 RSYNC := rsync
+SED := sed
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
@@ -149,6 +152,12 @@ SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
+# Expand substitution target files.
+
+ifneq ($(SUBS),)
+SUBS := $(addprefix $(OUTDIR)/$(APP)/, $(SUBS))
+endif
+
 # Provide a means of reporting progress.
 
 show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
@@ -163,7 +172,7 @@ all: application documentation
 
 # Build the application and its supporting binary files.
 
-application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(EXTRAPREREQ)
+application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(SUBS) $(EXTRAPREREQ)
 
 # Build the complete !RunImage from the object files.
 
@@ -193,6 +202,14 @@ ifneq ($(MENUS),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
 	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
 	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
+endif
+
+# Process any substitution files.
+
+ifneq ($(SUBS),)
+$(SUBS):
+	@$(call show-stage,SUBSTITUTING,$@)
+	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
 endif
 
 # Build the documentation
@@ -276,6 +293,9 @@ clean::
 	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(MENUS),)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
+endif
+ifneq ($(SUBS),)
+	$(foreach SUBTARGET,$(SUBS),$(RM) $(SUBTARGET))
 endif
 ifneq ($(SHHELP),)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)
