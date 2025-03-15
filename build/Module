@@ -1,4 +1,4 @@
-# Copyright 2013-2020, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2013-2025, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -92,6 +92,7 @@ TEXTMERGE := $(SFTOOLS_BIN)/textmerge
 MENUGEN := $(SFTOOLS_BIN)/menugen
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -203,8 +204,13 @@ documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(APP),$(OUTDIR)/$(
 ifneq ($(and $(APP),$(TEXTHELP)),)
 $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(APP)/$(TEXTHELP) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) $(OUTDIR)
 	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
@@ -212,8 +218,13 @@ $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) $(OUTDI
 else
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 endif
 
 $(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)

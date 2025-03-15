@@ -1,4 +1,4 @@
-# Copyright 2010-2020, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2010-2025, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -91,6 +91,7 @@ MENUGEN := $(SFTOOLS_BIN)/menugen
 TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -225,13 +226,23 @@ documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE)
 
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 
 $(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
 	@$(call show-stage,TEXT MANUAL,$(NORCROFTDIR)/$(README))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRCNC) -text $(NORCROFTDIR)/$(README) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRCNC) -O$(NORCROFTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 
 $(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)
 	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))

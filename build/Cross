@@ -1,4 +1,4 @@
-# Copyright 2010-2020, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2010-2025, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -39,11 +39,13 @@ PACKAGELOC ?= Misc
 ifeq ($(TARGET),riscos)
   RUNIMAGE ?= utility,ff8
   README ?= ReadMe,fff
+  HTMLHELP ?=
   LICENCE ?= Licence,fff
   ADDITIONS ?=
 else
   RUNIMAGE ?= utility
   README ?= ReadMe.txt
+  HTMLHELP ?=
   LICENCE ?= Licence.txt
   ADDITIONS ?=
 endif
@@ -111,6 +113,7 @@ ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -213,12 +216,29 @@ $(OUTDIR):
 
 # Build the documentation
 
-documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE)
+documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+
+ifneq ($(HTMLHELP),)
+$(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(HTMLHELP) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
+	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+endif
 
 $(OUTDIR)/$(LICENCE): $(LICSRC)
 	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))

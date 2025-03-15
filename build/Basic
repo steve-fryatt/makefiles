@@ -1,4 +1,4 @@
-# Copyright 2014-2020, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2014-2025, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -98,6 +98,7 @@ MENUGEN := $(SFTOOLS_BIN)/menugen
 TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -207,16 +208,26 @@ $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 
 $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 
 ifneq ($(SHHELP),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
 	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
 	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
 	@$(RM) SHTemp
+endif
 endif
 
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
@@ -226,8 +237,13 @@ $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
 endif
 
 $(OUTDIR)/$(LICENCE): $(LICSRC)
