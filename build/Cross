@@ -42,12 +42,14 @@ ifeq ($(TARGET),riscos)
   HTMLHELP ?=
   LICENCE ?= Licence,fff
   ADDITIONS ?=
+  TEXTENCODE ?= AcornL1
 else
   RUNIMAGE ?= utility
   README ?= ReadMe.txt
   HTMLHELP ?=
   LICENCE ?= Licence.txt
   ADDITIONS ?=
+  TEXTENCODE ?= UTF8
 endif
 
 EXTRASRC ?=
@@ -221,7 +223,7 @@ documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDI
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding $(TEXTENCODE) \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
@@ -232,7 +234,7 @@ ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(HTMLHELP) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \

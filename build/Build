@@ -148,7 +148,7 @@ $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANSRC)),)
 ifneq ($(XMLMAN),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(ECHO) XMLMan not available: skipping manual build.

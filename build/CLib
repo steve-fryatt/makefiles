@@ -227,7 +227,7 @@ documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE)
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding UTF8 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
@@ -237,7 +237,7 @@ endif
 $(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
 	@$(call show-stage,TEXT MANUAL,$(NORCROFTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRCNC) -text $(NORCROFTDIR)/$(README) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRCNC) -text $(NORCROFTDIR)/$(README) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRCNC) -O$(NORCROFTDIR)/$(README) \

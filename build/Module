@@ -205,7 +205,7 @@ ifneq ($(and $(APP),$(TEXTHELP)),)
 $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(APP)/$(TEXTHELP) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(APP)/$(TEXTHELP) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(TEXTHELP) \
@@ -219,7 +219,7 @@ else
 $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) \
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
