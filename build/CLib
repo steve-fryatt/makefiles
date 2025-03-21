@@ -95,7 +95,7 @@ XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
-CCFLAGS := -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-aliasing
+CCFLAGS := -std=c99 -mlibscl -mhard-float -static -mthrowback -Wall -O2 -fno-strict-aliasing
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9

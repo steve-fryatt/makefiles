@@ -120,10 +120,10 @@ XMLMAN := $(SFTOOLS_BIN)/xmlman
 # Build Flags
 
 ifeq ($(TARGET),riscos)
-  CCFLAGS += -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'RISCOS' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
+  CCFLAGS += -std=c99 -mlibscl -mhard-float -static -mthrowback -Wall -O2 -D'RISCOS' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -fno-strict-aliasing -mpoke-function-name
   ZIPFLAGS := -x "*/.svn/*" -r -, -9
 else
-  CCFLAGS += -Wall -g -O2 -fno-strict-aliasing -rdynamic -D'LINUX' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"'
+  CCFLAGS += -std=c99 -Wall -g -O2 -fno-strict-aliasing -rdynamic -D'LINUX' -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"'
   ZIPFLAGS := -x "*/.svn/*" -r -9
 endif
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
