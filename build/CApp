@@ -42,6 +42,7 @@ MENUS ?= Menus,ffd
 FINDHELP ?= !Help,ffb
 TEXTHELP ?= HelpText,fff
 SHHELP ?=
+HTHELP ?=
 HTMLHELP ?=
 README ?= ReadMe,fff
 LICENCE ?= Licence,fff
@@ -216,7 +217,8 @@ endif
 # Build the documentation
 
 documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
-		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)) \
+		$(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
@@ -249,6 +251,18 @@ endif
 $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
 	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
+
+ifneq ($(HTHELP),)
+$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANUAL)/$(MANSRC)
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
+ifneq ($(findstring .xml, $(MANSRC)),)
+	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
+	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+endif
 
 ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
@@ -315,6 +329,9 @@ ifneq ($(SUBS),)
 endif
 ifneq ($(SHHELP),)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)
+endif
+ifneq ($(HTHELP),)
+	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)
 endif
 ifneq ($(HTMLHELP),)
 	$(RM) $(OUTDIR)/$(HTMLHELP)
