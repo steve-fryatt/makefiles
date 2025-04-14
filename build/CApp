@@ -216,6 +216,9 @@ endif
 
 # Build the documentation
 
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
 documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)) \
 		$(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
@@ -224,24 +227,24 @@ $(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
 	@$(TOKENIZE) $(HELPTOKFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
 
-$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 ifneq ($(SHHELP),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSPR)
+$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANSRC) $(MANUAL)/$(MANSPR)
 	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) -encoding AcornL1 \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MSTRONG -I$(MANUAL)/$(MANSRC) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(MANTOOLS) -MSTRONG -I$(firstword $(MANSRC)) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
 	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
 	@$(RM) SHTemp
@@ -253,25 +256,25 @@ $(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR
 	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
 
 ifneq ($(HTHELP),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 endif
 
 ifneq ($(HTMLHELP),)
-$(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 endif

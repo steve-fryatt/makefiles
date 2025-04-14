@@ -220,27 +220,33 @@ $(OUTDIR)/$(HDRDIR)/%.h: $(SRCDIR)/%.h
 
 # Build the documentation
 
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
+MANFILENC := $(firstword $(MANSRCNC))
+MANSRCNC := $(addprefix $(MANUAL)/, $(MANSRCNC))
+
 documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(NORCROFTDIR)/$(LICENCE)
 	@$(call show-stage,DOXYGEN,$(MANUAL)/Doxyfile)
 	@doxygen $(MANUAL)/Doxyfile
 
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC) $(OUTDIR)
+$(OUTDIR)/$(README): $(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding UTF8 \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding UTF8 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
-$(NORCROFTDIR)/$(README): $(MANUAL)/$(MANSRCNC)
+$(NORCROFTDIR)/$(README): $(MANSRCNC)
 	@$(call show-stage,TEXT MANUAL,$(NORCROFTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRCNC) -text $(NORCROFTDIR)/$(README) -encoding AcornL1 \
+ifneq ($(findstring .xml, $(MANFILENC)),)
+	@$(XMLMAN) $(firstword $(MANSRCNC)) -text $(NORCROFTDIR)/$(README) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRCNC) -O$(NORCROFTDIR)/$(README) \
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRCNC)) -O$(NORCROFTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 

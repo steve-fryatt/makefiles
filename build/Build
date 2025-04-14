@@ -142,20 +142,23 @@ all: documentation
 # We skip the use of Mantools if they don't exist, as we could be working
 # with only a partial installation.
 
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
 documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(APP),$(OUTDIR)/$(APP)/$(TEXTHELP))
 
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(README): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANSRC)),)
+ifneq ($(findstring .xml, $(MANFILE)),)
 ifneq ($(XMLMAN),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding AcornL1 \
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(ECHO) XMLMan not available: skipping manual build.
 endif
 else
 ifneq ($(MANTOOLS),)
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 else
 	@$(ECHO) ManTools not available: skipping manual build.

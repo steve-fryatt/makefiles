@@ -218,26 +218,29 @@ $(OUTDIR):
 
 # Build the documentation
 
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
 documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(README): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -text $(OUTDIR)/$(README) -encoding $(TEXTENCODE) \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding $(TEXTENCODE) \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) \
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
 ifneq ($(HTMLHELP),)
-$(OUTDIR)/$(HTMLHELP): $(MANUAL)/$(MANSRC)
+$(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-ifneq ($(findstring .xml, $(MANSRC)),)
-	@$(XMLMAN) $(MANUAL)/$(MANSRC) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(HTMLHELP) \
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 endif
