@@ -241,7 +241,7 @@ ifneq ($(HTMLHELP),)
 $(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding 7Bit \
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
 			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
