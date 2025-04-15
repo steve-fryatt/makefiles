@@ -221,7 +221,7 @@ $(OUTDIR):
 MANFILE := $(firstword $(MANSRC))
 MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
 
-documentation: $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+documentation: $(OUTDIR) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
 
 $(OUTDIR)/$(README): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
@@ -291,6 +291,9 @@ clean::
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(LICENCE)
+ifneq ($(HTMLHELP),)
+	$(RM) $(OUTDIR)/$(HTMLHELP)
+endif
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
