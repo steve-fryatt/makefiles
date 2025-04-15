@@ -1,0 +1,248 @@
+# Copyright 2014-2025, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Shared Makefile for Tokenize-based BASIC Utilities
+#
+# This file really needs to be run by GNUMake.
+# It is intended for native compilation on Linux (for use in a GCCSDK
+# environment) or cross-compilation under the GCCSDK.
+#
+# Set VERSION to build using a version number and not an SVN revision.
+
+.PHONY: all clean application documentation release backup
+
+# Target Details
+
+ARCHIVE ?= utility
+PACKAGE ?=
+PACKAGELOC ?= Misc
+RUNIMAGE ?= utility,ffb
+README ?= ReadMe,fff
+HTMLHELP ?=
+LICENCE ?= Licence,fff
+ADDITIONS ?=
+EXTRASRC ?=
+EXTRAPREREQ ?=
+EXTRASRCPREREQ ?=
+
+# Set up the source files.
+
+MANSRC ?= Source
+PKGCTRL ?= Control
+PKGCPY ?= Copyright
+LICSRC ?= Licence
+
+SRCS ?= UtilSrc.bbt
+
+# Set up the various build directories.
+
+SRCDIR := src
+MANUAL := manual
+OUTDIR := build
+PKGDIR := package
+PKGTREEDIR := Apps
+PKGCTRLDIR := RiscPkg
+
+# Includes and libraries.
+
+SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h -swis $(GCCSDK_INSTALL_ENV)/include/TokenizeSWIs.h
+LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
+
+# Build Tools
+
+ECHO := echo
+PRINTF := printf
+MKDIR := mkdir -p
+RM := rm -rf
+CP := cp
+CD := cd
+RSYNC := rsync
+SED := sed
+ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+MANTOOLS := $(SFTOOLS_BIN)/mantools
+BINDHELP := $(SFTOOLS_BIN)/bindhelp
+TEXTMERGE := $(SFTOOLS_BIN)/textmerge
+MENUGEN := $(SFTOOLS_BIN)/menugen
+TOKENIZE := $(SFTOOLS_BIN)/tokenize
+GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
+MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
+XMLMAN := $(SFTOOLS_BIN)/xmlman
+
+# Build Flags
+
+ZIPFLAGS := -x "*/.svn/*" -r -, -9
+SRCZIPFLAGS := -x "*/.svn/*" -r -9
+PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
+BUZIPFLAGS := -x "*/.svn/*" -r -9
+PKGRSFLAGS := -av --exclude=*.svn*
+BINDHELPFLAGS := -f -r -v
+MENUGENFLAGS :=
+TOKENIZEFLAGS += -verbose -warn pV -swi $(SWIDEFS)
+HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
+FULLTOKFLAGS := $(TOKENIZEFLAGS) -crunch EIrW
+
+# Set up escape sequences for colouring terminal output.
+
+COLOUR_ACTION := \033[1;32m
+COLOUR_END := \033[0m
+
+# The build date.
+
+BUILD_DATE := $(shell date "+%d %b %Y")
+HELP_DATE := $(shell date "+%-d %B %Y")
+FILE_DATE := $(shell date "+%Y%m%d")
+
+# Construct version or revision information.
+
+ifeq ($(VERSION),)
+  RELEASE := $(shell git rev-parse --short=7 HEAD)
+  override VERSION := $(RELEASE)
+  HELP_VERSION := ----
+ifneq ($(PACKAGE),)
+  PACKAGE := $(PACKAGE)Unstable
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+endif
+else
+  RELEASE := $(subst .,,$(VERSION))
+  HELP_VERSION := $(VERSION)
+ifneq ($(PACKAGE),)
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+endif
+endif
+
+# The archives to assemble the release files, sources and backups in.
+# If $(RELEASE) is set, then the file can be given a version number suffix.
+
+ZIPFILE := $(ARCHIVE)$(RELEASE).zip
+SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
+PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
+BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
+
+# Provide a means of reporting progress.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
+# Inform the user what we're about to do.
+
+$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
+
+# Build everything, but don't package it for release.
+
+all: application documentation
+
+# Build the application and its supporting binary files.
+
+application: $(OUTDIR)/$(RUNIMAGE) $(EXTRAPREREQ)
+
+# Build the complete !RunImage from the object files.
+
+SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
+
+$(OUTDIR)/$(RUNIMAGE): $(OUTDIR) $(SRCS) $(EXTRASRCPREREQ)
+	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(RUNIMAGE))
+	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(RUNIMAGE) \
+		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+
+# Create a folder to take the output.
+
+$(OUTDIR):
+	$(MKDIR) $(OUTDIR)
+
+# Build the documentation
+
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
+documentation: $(OUTDIR) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+
+$(OUTDIR)/$(README): $(MANSRC)
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+
+ifneq ($(HTMLHELP),)
+$(OUTDIR)/$(HTMLHELP): $(MANSRC)
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(README) -encoding 7Bit \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+else
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+endif
+
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
+
+# Build the release Zip file.
+
+release: clean all
+	@$(call show-stage,ZIPPING RELEASE,$(ZIPFILE))
+	@$(RM) ../$(ZIPFILE)
+	@($(CD) $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(RUNIMAGE) $(README) $(LICENCE) $(ADDITIONS))
+ifneq ($(PACKAGE),)
+	@$(call show-stage,ZIPPING PACKAGE,$(PKGZIPFILE))
+	@$(MKDIR) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	@$(MKDIR) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)
+	@$(RM) ../$(PKGZIPFILE)
+	@$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/*
+	@($(CD) $(OUTDIR) ; $(RSYNC) $(PKGRSFLAGS) $(APP) $(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)/ )
+	@$(MAKECONTROL) --template $(PKGDIR)/$(PKGCTRL) --control $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL) --version $(PKG_VERSION)
+	@$(TEXTMERGE) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY) $(OUTDIR)/$(LICENCE) $(PKGDIR)/$(PKGCPY) 5
+	@($(CD) $(OUTDIR)/$(PKGDIR) ; $(ZIP) $(PKGZIPFLAGS) ../../../$(PKGZIPFILE) $(PKGTREEDIR) $(PKGCTRLDIR))
+endif
+	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
+	@$(RM) ../$(SRCZIPFILE)
+	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MANUAL) $(EXTRASRC)
+
+
+# Build a backup Zip file
+
+backup:
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
+	@$(RM) ../$(BUZIPFILE)
+	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+
+
+# Clean targets
+
+clean::
+	@$(call show-stage,CLEANING,)
+	$(RM) $(OUTDIR)/$(RUNIMAGE)
+	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(LICENCE)
+ifneq ($(HTMLHELP),)
+	$(RM) $(OUTDIR)/$(HTMLHELP)
+endif
+ifneq ($(PACKAGE),)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
+	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCPY)
+endif
