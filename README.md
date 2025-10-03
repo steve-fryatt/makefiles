@@ -32,6 +32,34 @@ To build the manual, Mantools must also have been installed. This must be done *
 again will cause the manual to be built if Mantools have been installed correctly.
 
 
+Usage Notes
+-----------
+
+Makefiles should be used with GNUMake.
+
+The `VERSION` variable can be set to a `n.nn` value (eg. `VERSION=1.23`) to define a build version number; if unset, the Git commit hash for `HEAD` is used.
+
+Some scripts allow `TARGET` to be set to `linux` or `riscos` to determine the type of binary to be generated.
+
+### Build information
+
+When the toolchain is called to build the main executable, a build version, build date and additional build information will be passed in as defines:
+
+* For GCC, the constants `BUILD_VERSION`, `BUILD_DATE` and `BUILD_INFO` will be set.
+* For Tokenize, the variables `build_version$`, `build_date$` and `build_info$` will be set.
+* For AsAsm, the constants `BuildVersion`, `BuildDate` and `BuildInfo` will be set.
+
+The build version will be the version in the `VERSION` variable when the Makefile was called. If this variable was unset or empty, the first seven digits of the Git commit hash of the project folder will be used.
+
+The build date will be the date that the Makefile was called, in the form `DD Mmm YYYY`.
+
+The build info will be the contents of the `BUILDINFO` variable, which is unset by default. This can be set by the calling Makefile, to provide some project-specific information for the build process. An example being Puzzles, which passes the Git commit hash for the upstream code submodule by including
+
+    BUILDINFO := $(shell cd src/core; git rev-parse --short=7 HEAD)
+
+in its Makefile before including `CApp`.
+
+
 Licence
 -------
 

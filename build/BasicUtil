@@ -129,6 +129,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -160,7 +165,7 @@ SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 $(OUTDIR)/$(RUNIMAGE): $(OUTDIR) $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(RUNIMAGE) \
-		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILD_INFO)'
 
 # Create a folder to take the output.
 
@@ -178,7 +183,7 @@ $(OUTDIR)/$(README): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -189,7 +194,7 @@ $(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(README) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'

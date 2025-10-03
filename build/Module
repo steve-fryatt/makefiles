@@ -134,6 +134,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -187,7 +192,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 	@$(call show-stage,ASSEMBLING,$<)
 	@$(MKDIR) $(@D)
 	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' \
-			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -PreDefine 'BuildInfo SETS "\"$(BUILD_INFO)\""' -o $@ $<
 
 # Process any substitution files.
 
@@ -209,7 +214,7 @@ $(OUTDIR)/$(APP)/$(TEXTHELP): $(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(TEXTHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(TEXTHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -223,7 +228,7 @@ $(OUTDIR)/$(README): $(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'

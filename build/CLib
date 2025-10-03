@@ -135,6 +135,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -204,8 +209,8 @@ $(OUTDIR)/$(LIBRARY): $(OBJS) $(OUTDIR)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
 	@$(call show-stage,COMPILING,$<)
 	@$(MKDIR) $(@D)
-	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< > $(@:.o=.d)
+	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
 	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
 	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
@@ -234,7 +239,7 @@ $(OUTDIR)/$(README): $(MANSRC) $(OUTDIR)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding UTF8 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -244,7 +249,7 @@ $(NORCROFTDIR)/$(README): $(MANSRCNC)
 	@$(call show-stage,TEXT MANUAL,$(NORCROFTDIR)/$(README))
 ifneq ($(findstring .xml, $(MANFILENC)),)
 	@$(XMLMAN) $(firstword $(MANSRCNC)) -text $(NORCROFTDIR)/$(README) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRCNC)) -O$(NORCROFTDIR)/$(README) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'

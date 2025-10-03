@@ -142,6 +142,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -179,7 +184,7 @@ SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) \
-		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)'
+		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILD_INFO)'
 
 # Build the menus file.
 
@@ -213,7 +218,7 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -224,7 +229,7 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANSRC) $(MANUAL)/$(MANSPR)
 	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN)$(firstword $(MANSRC)) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MSTRONG -I$(firstword $(MANSRC)) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
@@ -242,7 +247,7 @@ $(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'

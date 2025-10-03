@@ -117,6 +117,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -152,7 +157,7 @@ $(OUTDIR)/$(README): $(MANSRC)
 ifneq ($(findstring .xml, $(MANFILE)),)
 ifneq ($(XMLMAN),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(ECHO) XMLMan not available: skipping manual build.
 endif

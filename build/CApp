@@ -146,6 +146,11 @@ ifneq ($(PACKAGE),)
 endif
 endif
 
+# Extra Info to be passed to compiler and documentation.
+# Can be set by caller to pass specific build information
+
+BUILDINFO ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
 
@@ -191,8 +196,8 @@ $(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ)
 	@$(call show-stage,COMPILING,$<)
 	@$(MKDIR) $(@D)
-	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' $(INCLUDES) $< > $(@:.o=.d)
+	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
 	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
 	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
@@ -231,7 +236,7 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANSRC)
 	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -242,7 +247,7 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANSRC) $(MANUAL)/$(MANSPR)
 	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MSTRONG -I$(firstword $(MANSRC)) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
@@ -260,7 +265,7 @@ $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
@@ -272,7 +277,7 @@ $(OUTDIR)/$(HTMLHELP): $(MANSRC)
 	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
 ifneq ($(findstring .xml, $(MANFILE)),)
 	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)'
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
 else
 	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
