@@ -1,0 +1,127 @@
+# Copyright 2010-2026, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Common Setup for Shared Makefiles
+#
+# This file really needs to be run by GNUMake.
+# It is intended for native compilation on Linux (for use in a GCCSDK
+# environment) or cross-compilation under the GCCSDK.
+#
+# Expectations on entry:
+#
+# $(VERSION) may be set to a build version number, in the form "1.23". If it is
+# unset or empty, the version will be taken from the project's Git commit hash.
+#
+# $(PACKAGE) may be set to the name of a package file (eg. "Locate"), in which
+# case packaging information will be obtained.
+#
+# $(GETPKGREV) should be set to the command which will be used to obtain package
+# details; if not set, no package details will be configured and $(PACKAGE) will
+# be unset.
+
+
+# Set up escape sequences for colouring terminal output. These values are used
+# by the show-stage function.
+
+COLOUR_ACTION := \033[1;32m
+COLOUR_END := \033[0m
+
+# Provide a means of reporting progress.
+#
+# Call as $(call show-stage, <stage>, <filename>) where <stage> is the name of
+# the build stage (eg. COMPILING, LINKING, etc) and <filename> is the name of
+# the object being processed.
+
+show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
+
+# Create some useful variables containing the date.
+#
+# $(BUILD_DATE) -> 01 Jan 2026    -- Often included in the compiled code.
+# $(HELP_DATE)  -> 1 January 2026 -- Often used in the documentation.
+# $(FILE_DATE)  -> 20260101       -- Often used when creating dated Zip files.
+
+BUILD_DATE := $(shell date "+%d %b %Y")
+HELP_DATE := $(shell date "+%-d %B %Y")
+FILE_DATE := $(shell date "+%Y%m%d")
+
+# Construct version or revision information.
+#
+# On entry:
+#
+# - $(VERSION) may be set externally to a version number for the build in the
+#   form "1.23".
+#
+# - $(PACKAGE) may be set to a package name, and $(GETPKGREV) to the tool for
+#   obtaining a package revision.
+#
+# On exit:
+#
+# - $(VERSION) will be set to a version string for use in the application build,
+#   either as supplied (eg. "1.23") or as a Git commit hash (eg. "64f7d0b").
+#
+# - $(HELP_VERSION) will be set to version if user provided (eg. "1.23) or to
+#   "----" if the Git commit hash is being used.
+#
+# - $(RELEASE) will be set to version without any dots (eg. "123" or "64f7d0b").
+#
+# - $(PACKAGE) may be updated with the "Unstable" prefix if appropriate, or
+#   set to empty if $(GETPKGREV) was not available.
+#
+# - $(PKG_VERSION) will be set to the package version (eg. "1") if $(PACKAGE)
+#   remains set.
+
+ifeq ($(VERSION),)
+  RELEASE := $(shell git rev-parse --short=7 HEAD)
+  override VERSION := $(RELEASE)
+  HELP_VERSION := ----
+ifneq ($(PACKAGE),)
+ifneq ($(GETPKGREV),)
+  PACKAGE := $(PACKAGE)Unstable
+  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
+else
+  PACKAGE :=
+  undefine PKG_VERSION
+endif
+endif
+else
+  RELEASE := $(subst .,,$(VERSION))
+  HELP_VERSION := $(VERSION)
+ifneq ($(PACKAGE),)
+ifneq ($(GETPKGREV),)
+  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
+else
+  PACKAGE :=
+  undefine PKG_VERSION
+endif
+endif
+endif
+
+# Extra Info to be passed to compiler and documentation.
+#
+# If $(BUILDINFO) is not set by the caller, it will be set to empty. This can be
+# used by Makefiles to pass on specific build information.
+
+BUILDINFO ?=
+
+# Inform the user what we're about to do.
+
+$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)

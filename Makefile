@@ -26,7 +26,7 @@
 
 ARCHIVE := makefiles
 
-EXECUTABLES = Basic BasicUtil Build CApp CLib Cross Module
+EXECUTABLES = Components Basic BasicUtil Build CApp CLib Cross Module
 
 TARGETFOLDER = $(SFTOOLS_MAKE)
 
