@@ -1,0 +1,68 @@
+# Copyright 2023-2026, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Common code for basic File Substitutions
+#
+#
+# On entry, $(SUBS) should be either unset, empty or a list of leafnames of
+# files within $(SUBDIR) which need to have substitutions made to them.
+#
+# If $(APP) is set to the name of an application directory, then the substituted
+# files will be saved into $(OUTDIR)/$(APP)/, otherwise they will be saved
+# directly into $(OUTDIR).
+#
+# $(VERSION) should contain the user-facing version number associated with the
+# build.
+#
+# In the calling Makefile, $(SUBS) should be a prerequisite for the application
+# target, while clean-subs should be a prerequisite for the clean target.
+
+# Prefix all of the leafnames in $(SUBS) with the target folder: either
+# $(APP)/$(OUTDIR) or just $(OUTDIR)/ if $(APP) is unset.
+
+ifneq ($(SUBS),)
+SUBS := $(addprefix $(OUTDIR)/$(if $(APP),$(APP)/), $(SUBS))
+endif
+
+# The rule to process any changed target substitution files, looking at the
+# corresponding filenames from within $(SUBDIR).
+#
+# For any files which need updating, we call Sed to look for the string
+# "{{VERSION}}" within the text and replace it with the contents of $(VERSION).
+#
+# $(SUBS) should be a prerequisite of the application target.
+
+ifneq ($(SUBS),)
+$(SUBS): $(OUTDIR)/$(if $(APP),$(APP)/)%: $(SUBDIR)/%
+	@$(call show-stage,SUBSTITUTING,$@)
+	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
+endif
+
+# Clean the substituted files.
+#
+# clean-subs should be a prerequisite of the clean target.
+
+clean-subs:
+ifneq ($(SUBS),)
+	@$(call show-stage, CLEANING, $(SUBS))
+	$(foreach SUBTARGET,$(SUBS),$(RM) $(SUBTARGET))
+endif

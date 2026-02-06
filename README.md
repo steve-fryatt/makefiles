@@ -37,9 +37,25 @@ Usage Notes
 
 Makefiles should be used with GNUMake.
 
-The `VERSION` variable can be set to a `n.nn` value (eg. `VERSION=1.23`) to define a build version number; if unset, the Git commit hash for `HEAD` is used.
+The `VERSION` variable can be set to a `n.nn` value (eg. `VERSION=1.23`) when calling Make to define a build version number; if unset, the Git commit hash for `HEAD` is used.
 
-Some scripts allow `TARGET` to be set to `linux` or `riscos` to determine the type of binary to be generated.
+Some scripts allow the `TARGET` variable to be set to `linux` or `riscos` to determine the type of binary to be generated.
+
+### Documentation
+
+The documentation will be built using either [Mantools](https://github.com/steve-fryatt/mantools) or [XMLMan](https://github.com/steve-fryatt/xmlman). The source files should be pointed to by the `MANSRC` variable, which is either the name of a single file, or a space-separated list if the manual source comprises more than one file. In either case, the first name in the list is passed to the manual build tool, whilst the rest are additional source files used by Make to trigger a re-build of the outputs. If the first filename ends with `.xml` then XMLMan will be used for the build; otherwise, Mantools will be used. The files are all assumed to be within the manual source folder.
+
+If a Mantools manual uses a sprite, then this can be pointed to by the `MANSPR` variable.
+
+The documentation can be written out in Text, HTML and StrongHelp formats to files within the application's UK Resources folder with names given by the `TEXTHELP`, `SHHELP` and `HTHELP` variables respectively. `TEXTHELP` defaults to `HelpText,fff`, whilst the others are unset by default.
+
+To make the documentation obvious to an end user, it can be copied into the root of the distribution archive. This is done by setting the `README` and `HTMLHELP` variables to the names of the required top-level files (there is no provision to place a StrongHelp file in the archive root); `README` defaults to `ReadMe,fff` whilst `HTMLHELP` is unset by default. The `READMEHDR` variable supplies the name of a header file within the manual source folder (which defaults to `Header`), that is copied into the top of the ReadMe file. This is configured to be placed correctly for the default output from Mantools or XMLMan, but may not work if the output format varies.
+
+For internationalisation and the ability to fall back to plain text when a more structure manual format isn't available, it is expected that the application's !Help file will be a small BASIC program which loads the required file. The source of the program should be in plain text form within the manual source folder, and its name is given by the `FINDHELPSRC` variable - this defaults to `Help.bbt`. The tokenised BASIC will be written to a file in the application folder root; its name is stored in the `FINDHELP` variable, and defaults to `!Help,ffb`.
+
+The manual source folder is pointed to by the `MANSRC` variable. It defaults to `manual` at the root of the project.
+
+A licence can be copied from the root of the project folder in to the root of the distribution archive. The original filename should be given in the `LICSRC` variable, and the target name in the `LICENCE` variable; these default to `Licence` and `Licence,fff` respectively.
 
 ### Build information
 
@@ -58,6 +74,24 @@ The build info will be the contents of the `BUILDINFO` variable, which is unset 
     BUILDINFO := $(shell cd src/core; git rev-parse --short=7 HEAD)
 
 in its Makefile before including `CApp`.
+
+### Obey file substitutions
+
+Within `Basic`, `CApp` and `Module` it is possible to insert the build version into Obey files within the `OUTPUT` folder. If `APP` is set to the application name, then the resulting files will be placed within `$OUTPUT/$APP/` - that is, within the root of the application folder.
+
+The files to be substituted should be stored within the `SUBDIR` folder, which by default is `subs/` in the root of the project, and listed in `SUBS`. To process an application's standard !Boot and !Run files, the source files would usually be saved as `subs/!Boot,feb` and `subs/!Run,feb`, and `SUBS` set to
+
+    SUBS := !Boot,feb !Run.feb
+
+If `APP` is also set to
+
+    APP := !App
+
+then the resulting files will be written to `build/!App/!Boot,feb` and `build/!App/!Run,feb` respectively. If `APP` is not set, then the files will be written to `build/!Boot,feb` and `build/!Run,feb`.
+
+Within each of the source files, any occurrences of the text `{{VERSION}}` will be replaced with the version number associated with the build: either the value passed in with the `VERSION` variable, or the Git commit hash. This will most likely be used for setting the `App$Version` system variable, for example:
+
+    Set MyApp$Version "{{VERSION}}"
 
 
 Licence

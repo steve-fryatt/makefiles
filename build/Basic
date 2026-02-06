@@ -35,6 +35,8 @@ SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
 .PHONY: all clean application documentation release backup
 
+.DEFAULT_GOAL = all
+
 # Target Details
 
 ARCHIVE ?= application
@@ -132,9 +134,7 @@ BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
 # Expand substitution target files.
 
-ifneq ($(SUBS),)
-SUBS := $(addprefix $(OUTDIR)/$(APP)/, $(SUBS))
-endif
+include $(SHARED_COMPONENTS)/Substitutions
 
 # Build everything, but don't package it for release.
 
@@ -159,14 +159,6 @@ ifneq ($(MENUS),)
 $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
 	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
 	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
-endif
-
-# Process any substitution files.
-
-ifneq ($(SUBS),)
-$(SUBS):
-	@$(call show-stage,SUBSTITUTING,$@)
-	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
 endif
 
 # Build the documentation
@@ -258,7 +250,7 @@ backup:
 
 # Clean targets
 
-clean::
+clean: clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)

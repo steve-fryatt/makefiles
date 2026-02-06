@@ -35,6 +35,8 @@ SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
 .PHONY: all clean application documentation release backup
 
+.DEFAULT_GOAL = all
+
 # Target Details
 
 ARCHIVE ?= application
@@ -124,13 +126,7 @@ BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
 # Expand substitution target files.
 
-ifneq ($(SUBS),)
-ifneq ($(APP),)
-SUBS := $(addprefix $(OUTDIR)/$(APP)/, $(SUBS))
-else
-SUBS := $(addprefix $(OUTDIR)/, $(SUBS))
-endif
-endif
+include $(SHARED_COMPONENTS)/Substitutions
 
 # Build everything, but don't package it for release.
 
@@ -160,14 +156,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
 	@$(MKDIR) $(@D)
 	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' \
 			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -PreDefine 'BuildInfo SETS "\"$(BUILD_INFO)\""' -o $@ $<
-
-# Process any substitution files.
-
-ifneq ($(SUBS),)
-$(SUBS):
-	@$(call show-stage,SUBSTITUTING,$@)
-	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
-endif
 
 # Build the documentation
 
@@ -239,7 +227,7 @@ backup:
 
 # Clean targets
 
-clean::
+clean: clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 ifneq ($(APP),)
@@ -249,9 +237,6 @@ ifneq ($(TEXTHELP),)
 endif
 else
 	$(RM) $(OUTDIR)/$(MODULE)
-endif
-ifneq ($(SUBS),)
-	$(foreach SUBTARGET,$(SUBS),$(RM) $(SUBTARGET))
 endif
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(LICENCE)
