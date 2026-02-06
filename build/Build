@@ -1,4 +1,4 @@
-# Copyright 2013-2025, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2013-2026, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -27,6 +27,11 @@
 # environment) or cross-compilation under the GCCSDK.
 #
 # Set VERSION to build using a version number and not an SVN revision.
+
+# The client can set SHARED_COMPONENTS to point to a folder containing the
+# child Makefile fragments. If it doesn't, use this default.
+
+SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
 .PHONY: all clean documentation release install backup
 
@@ -67,7 +72,7 @@ ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
 RM := rm -rf
-CP := cp
+CP := cp -a
 CD := cd
 RSYNC := rsync
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
@@ -88,39 +93,9 @@ BUZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
 BINDHELPFLAGS := -f -r -v
 
-# Set up escape sequences for colouring terminal output.
+# Include some components common to all the shared Makefiles.
 
-COLOUR_ACTION := \033[1;32m
-COLOUR_END := \033[0m
-
-# The build date.
-
-BUILD_DATE := $(shell date "+%d %b %Y")
-HELP_DATE := $(shell date "+%-d %B %Y")
-FILE_DATE := $(shell date "+%Y%m%d")
-
-# Construct version or revision information.
-
-ifeq ($(VERSION),)
-  RELEASE := $(shell git rev-parse --short=7 HEAD)
-  override VERSION := $(RELEASE)
-  HELP_VERSION := ----
-ifneq ($(PACKAGE),)
-  PACKAGE := $(PACKAGE)Unstable
-  PKG_VERSION := $(shell $(GETPKGREV) --index unstable --package $(PACKAGE) --revision $(VERSION))
-endif
-else
-  RELEASE := $(subst .,,$(VERSION))
-  HELP_VERSION := $(VERSION)
-ifneq ($(PACKAGE),)
-  PKG_VERSION := $(shell $(GETPKGREV) --index stable --package $(PACKAGE) --revision $(VERSION))
-endif
-endif
-
-# Extra Info to be passed to compiler and documentation.
-# Can be set by caller to pass specific build information
-
-BUILDINFO ?=
+include $(SHARED_COMPONENTS)/Common
 
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.
@@ -129,14 +104,6 @@ ZIPFILE := $(ARCHIVE)$(RELEASE).zip
 SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
-
-# Provide a means of reporting progress.
-
-show-stage = $(PRINTF) "$(COLOUR_ACTION)*%18s: %s$(COLOUR_END)\n" "$(1)" "$(2)"
-
-# Inform the user what we're about to do.
-
-$(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
 
 # Build everything, but don't package it for release.
 

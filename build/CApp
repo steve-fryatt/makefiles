@@ -28,6 +28,11 @@
 #
 # Set VERSION to build using a version number and not an SVN revision.
 
+# The client can set SHARED_COMPONENTS to point to a folder containing the
+# child Makefile fragments. If it doesn't, use this default.
+
+SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
+
 .PHONY: all clean application documentation release backup
 
 # Target Details
@@ -119,7 +124,7 @@ HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
 # Include some components common to all the shared Makefiles.
 
-include $(SFTOOLS_MAKE)/Components/Common
+include $(SHARED_COMPONENTS)/Common
 
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set, then the file can be given a version number suffix.

@@ -1,4 +1,4 @@
-# Copyright 2020, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2020-2026, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of SFTools Shared Makefiles:
 #
@@ -31,6 +31,8 @@ EXECUTABLES = Components Basic BasicUtil Build CApp CLib Cross Module
 TARGETFOLDER = $(SFTOOLS_MAKE)
 
 # There's no guarantee that the Shared Makefiles have been installed yet,
-# so for now, bootstrap off the file within our own archive.
+# so for now, bootstrap off the files within our own archive.
+
+SHARED_COMPONENTS = build/Components
 
 include build/Build
