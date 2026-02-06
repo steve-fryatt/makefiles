@@ -35,6 +35,8 @@ SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
 .PHONY: all clean documentation release install backup
 
+.DEFAULT_GOAL = all
+
 # Target Details
 
 ARCHIVE ?= tools
