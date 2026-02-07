@@ -78,6 +78,8 @@ endif
 #
 # clean-menus should be a prerequisite of the clean target.
 
+.PHONY: clean-menus
+
 clean-menus:
 ifneq ($(MENUS),)
 	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS))

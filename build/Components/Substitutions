@@ -75,6 +75,8 @@ endif
 #
 # clean-subs should be a prerequisite of the clean target.
 
+.PHONY: clean-subs
+
 clean-subs:
 ifneq ($(SUBS),)
 	@$(call show-stage, CLEANING, $(SUBS))
