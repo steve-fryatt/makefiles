@@ -124,17 +124,9 @@ MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
 HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
-# Include some components common to all the shared Makefiles.
+# Bring in support for shared tasks.
 
 include $(SHARED_COMPONENTS)/Common
-
-# The archives to assemble the release files, sources and backups in.
-# If $(RELEASE) is set, then the file can be given a version number suffix.
-
-ZIPFILE := $(ARCHIVE)$(RELEASE).zip
-SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
-PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
-BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
 # Bring in support for shared tasks.
 

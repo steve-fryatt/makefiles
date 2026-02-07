@@ -117,14 +117,6 @@ HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
 include $(SHARED_COMPONENTS)/Common
 
-# The archives to assemble the release files, sources and backups in.
-# If $(RELEASE) is set, then the file can be given a version number suffix.
-
-ZIPFILE := $(ARCHIVE)$(RELEASE).zip
-SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
-PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
-BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
-
 # Build everything, but don't package it for release.
 
 all: $(OUTDIR)/$(README) library norcroft

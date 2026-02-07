@@ -31,6 +31,9 @@
 # $(VERSION) may be set to a build version number, in the form "1.23". If it is
 # unset or empty, the version will be taken from the project's Git commit hash.
 #
+# $(ARCHIVE) should be set to a base name for any output archive files which
+# may be generated: usually the name of the project, such as "myapp".
+#
 # $(PACKAGE) may be set to the name of a package file (eg. "Locate"), in which
 # case packaging information will be obtained.
 #
@@ -121,6 +124,25 @@ endif
 # used by Makefiles to pass on specific build information.
 
 BUILDINFO ?=
+
+# The archives to assemble the release files, sources and backups in.
+# If $(RELEASE) is set above, then some of the files can be given a version
+# number suffix.
+#
+# On exit:
+#
+# - $(ZIPFILE) will be set to a name for the release archive file.
+#
+# - $(SRCZIPFILE) will be set to a name for the source archive file.
+#
+# - $(PKGZIPFILE) will be set to a name for the package archive file.
+#
+# - $(BUZIPFILE) will be set to a name for the backup archive file.
+
+ZIPFILE := $(ARCHIVE)$(RELEASE).zip
+SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
+PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
+BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
 # Inform the user what we're about to do.
 
