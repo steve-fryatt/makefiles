@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all library headers documentation clean release install backup
+.PHONY: all library headers documentation clean release install
 
 .DEFAULT_GOAL = all
 
@@ -83,14 +83,12 @@ INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-RM := rm -rf
 CP := cp
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 AR := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*riscos-ar)
 INSTALL := $(GCCSDK_INSTALL_ENV)/ro-install
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
@@ -106,7 +104,6 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
 HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
@@ -244,14 +241,6 @@ endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(NORCROFTDIR) $(SRCDIR) $(MANUAL)/$(MANSRC) $(MANUAL)/$(MANSRCNC) $(MANUAL)/Doxyfile $(EXTRASRC)
-
-
-# Build a backup Zip file
-
-backup:
-	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
-	@$(RM) ../$(BUZIPFILE)
-	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
 
 # Install the finished version in the GCCSDK, ready for use.

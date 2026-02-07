@@ -101,6 +101,14 @@ Within each of the source files, any occurrences of the text `{{VERSION}}` will 
 
     Set MyApp$Version "{{VERSION}}"
 
+### Backups
+
+It is possible to `make backup` to dump all of the files from within the project into a dated zip file whose name is based on `ARCHIVE` with the current date in `YYYYMMDD` format appended (eg. `project20260124.zip`). This provides a means to snapshot the state of the project at a given moment in time.
+
+The backup archive will be created in the _parent_ folder which contains the project. If the file already exists, _it will be deleted_ before a new archive is created.
+
+It is possible to specify the flags passed to Zip by setting the `BUZIPFLAGS` in the parent makefile. If this is not done, then suitable defaults are used.
+
 Licence
 -------
 

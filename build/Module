@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release backup
+.PHONY: all clean application documentation release
 
 .DEFAULT_GOAL = all
 
@@ -87,11 +87,9 @@ ECHO := echo
 PRINTF := printf
 CC := gcc
 MKDIR := mkdir -p
-RM := rm -rf
 CP := cp
 CD := cd
 RSYNC := rsync
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
@@ -106,7 +104,6 @@ STRIPFLAGS := -O binary
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
-BUZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
 BINDHELPFLAGS := -f -r -v
 
@@ -205,15 +202,6 @@ endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MANUAL) $(EXTRASRC)
-
-
-# Build a backup Zip file
-
-backup:
-	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
-	@$(RM) ../$(BUZIPFILE)
-	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
-
 
 # Clean targets
 

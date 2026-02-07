@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release backup
+.PHONY: all clean application documentation release
 
 .DEFAULT_GOAL = all
 
@@ -90,12 +90,10 @@ SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-RM := rm -rf
 CP := cp
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
@@ -111,7 +109,6 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
@@ -246,14 +243,6 @@ endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MENUDIR) $(MANUAL) $(EXTRASRC)
-
-
-# Build a backup Zip file
-
-backup:
-	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
-	@$(RM) ../$(BUZIPFILE)
-	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
 
 # Clean targets

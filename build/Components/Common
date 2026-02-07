@@ -41,6 +41,14 @@
 # details; if not set, no package details will be configured and $(PACKAGE) will
 # be unset.
 
+ifeq ($(ARCHIVE),)
+$(error Common rules require ARCHIVE to be set)
+endif
+
+# Set some generally useful paths to utilities.
+
+ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+RM := rm -rf
 
 # Set up escape sequences for colouring terminal output. These values are used
 # by the show-stage function.
@@ -147,3 +155,19 @@ BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 # Inform the user what we're about to do.
 
 $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
+
+# A rule to build the 'backup' target, which takes all of the files within the
+# project and writes them to a dated Zip archive in the project's parent folder.
+#
+# As standard, the .git and .svn folders are not included in the archive.
+
+BUZIPFLAGS ?= -x "*/.svn/*" "*/.git/*" -r -9
+
+.PHONY: backup
+
+backup:
+ifneq ($(BUZIPFILE),)
+	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
+	@$(RM) ../$(BUZIPFILE)
+	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+endif

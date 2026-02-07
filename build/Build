@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean documentation release install backup
+.PHONY: all clean documentation release install
 
 .DEFAULT_GOAL = all
 
@@ -73,11 +73,9 @@ PKGCTRLDIR := RiscPkg
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-RM := rm -rf
 CP := cp -v
 CD := cd
 RSYNC := rsync
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
@@ -90,7 +88,6 @@ XMLMAN := $(SFTOOLS_BIN)/xmlman
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
-BUZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
 BINDHELPFLAGS := -f -r -v
 
@@ -154,14 +151,6 @@ endif
 	@$(call show-stage,ZIPPING SOURCE,$(SRCZIPFILE))
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIR) $(SRCDIR) $(MANUAL) $(EXTRASRC)
-
-
-# Build a backup Zip file
-
-backup:
-	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
-	@$(RM) ../$(BUZIPFILE)
-	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
 
 # Install the finished version in the GCCSDK, ready for use.  It's not a striaghtforward
