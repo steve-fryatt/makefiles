@@ -57,7 +57,7 @@ $(SUBS): $(OUTDIR)/$(if $(APP),$(APP)/)%: $(SUBDIR)/%
 	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
 endif
 
-# Clean the substituted files.
+# The rule to clean the substituted files.
 #
 # clean-subs should be a prerequisite of the clean target.
 

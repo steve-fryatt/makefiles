@@ -124,7 +124,7 @@ SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
-# Expand substitution target files.
+# Bring in support for shared tasks.
 
 include $(SHARED_COMPONENTS)/Substitutions
 
