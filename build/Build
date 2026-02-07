@@ -44,7 +44,6 @@ PACKAGE ?=
 PACKAGELOC ?= Misc
 EXECUTABLES ?= Tools
 README ?= ReadMe,fff
-LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -58,7 +57,6 @@ MANSRC ?= Source
 MANSPR ?= ManSprite
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 # Set up the various build directories.
 
@@ -73,7 +71,6 @@ PKGCTRLDIR := RiscPkg
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-CP := cp -v
 CD := cd
 RSYNC := rsync
 MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
@@ -97,7 +94,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Build everything, but don't package it for release.
 
-all: documentation
+all: licence documentation
 
 # Build the documentation
 #
@@ -126,9 +123,6 @@ else
 	@$(ECHO) ManTools not available: skipping manual build.
 endif
 endif
-$(OUTDIR)/$(LICENCE): $(LICSRC)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
 
 
 # Build the release Zip file.
@@ -164,7 +158,7 @@ install: clean all
 
 # Clean targets
 
-clean::
+clean: clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(LICENCE)

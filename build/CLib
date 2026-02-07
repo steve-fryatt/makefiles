@@ -46,7 +46,6 @@ LIBRARY ?= library.a
 INCFOLDER ?= library
 HDRDIR ?= library
 README ?= ReadMe,fff
-LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 
@@ -57,7 +56,6 @@ MANSRCNC ?= Norcroft
 MANSPR ?= ManSprite
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 OBJS ?= library.0
 
@@ -83,7 +81,6 @@ INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-CP := cp
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
@@ -114,7 +111,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Build everything, but don't package it for release.
 
-all: $(OUTDIR)/$(README) library norcroft
+all: $(OUTDIR)/$(README) licence library norcroft
 
 # Build the library and its supporting binary files.
 
@@ -187,7 +184,7 @@ MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
 MANFILENC := $(firstword $(MANSRCNC))
 MANSRCNC := $(addprefix $(MANUAL)/, $(MANSRCNC))
 
-documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(NORCROFTDIR)/$(LICENCE)
+documentation: $(OUTDIR)/$(README) $(NORCROFTDIR)/$(README) licence $(NORCROFTDIR)/$(LICENCE)
 	@$(call show-stage,DOXYGEN,$(MANUAL)/Doxyfile)
 	@doxygen $(MANUAL)/Doxyfile
 
@@ -211,9 +208,7 @@ else
 			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
 endif
 
-$(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+# Copy the licence into the Norcroft folder.
 
 $(NORCROFTDIR)/$(LICENCE): $(LICSRC)
 	@$(call show-stage,LICENCE,$(NORCROFTDIR)/$(LICENCE))
@@ -256,13 +251,12 @@ install: clean all
 
 # Clean targets
 
-clean::
+clean: clean-licence
 	@$(call show-stage,CLEANING,)
 	@$(RM) $(OBJDIR)/*
 	@$(RM) $(OUTDIR)/$(LIBRARY)
 	@$(RM) $(OUTDIR)/$(HDRDIR)/*
 	@$(RM) $(OUTDIR)/$(README)
-	@$(RM) $(OUTDIR)/$(LICENCE)
 	@$(RM) $(NORCROFTDIR)/c/*
 	@$(RM) $(NORCROFTDIR)/h/*
 	@$(RM) $(NORCROFTDIR)/$(README)

@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release backup install
+.PHONY: all clean application documentation release install
 
 .DEFAULT_GOAL = all
 
@@ -68,7 +68,6 @@ EXTRASRCPREREQ ?=
 MANSRC ?= Source
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 OBJS ?= main.o
 
@@ -107,8 +106,6 @@ endif
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-RM := rm -rf
-CP := cp
 CD := cd
 RSYNC := rsync
 
@@ -118,7 +115,6 @@ else
   CC := gcc
 endif
 
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
@@ -135,7 +131,6 @@ else
 endif
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
-BUZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
 
 # Include some components common to all the shared Makefiles.
@@ -144,7 +139,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Build everything, but don't package it for release.
 
-all: application documentation
+all: application licence documentation
 
 # Build the application and its supporting binary files.
 
@@ -211,10 +206,6 @@ else
 endif
 endif
 
-$(OUTDIR)/$(LICENCE): $(LICSRC)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
-
 # Build the release Zip file.
 
 release: clean all
@@ -236,13 +227,6 @@ endif
 	@$(RM) ../$(SRCZIPFILE)
 	@$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) Makefile $(OUTDIRLINUX) $(OUTDIRRO) $(SRCDIR) $(MANUAL) $(EXTRASRC)
 
-# Build a backup Zip file
-
-backup:
-	@$(call show-stage,ZIPPING BACKUP,$(BUZIPFILE))
-	@$(RM) ../$(BUZIPFILE)
-	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
-
 # Install the finished version in the GCCSDK, ready for use.
 
 install: clean all
@@ -251,12 +235,11 @@ install: clean all
 
 # Clean targets
 
-clean::
+clean: clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
-	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(HTMLHELP),)
 	$(RM) $(OUTDIR)/$(HTMLHELP)
 endif

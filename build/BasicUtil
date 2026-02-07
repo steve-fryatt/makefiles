@@ -45,7 +45,6 @@ PACKAGELOC ?= Misc
 RUNIMAGE ?= utility,ffb
 README ?= ReadMe,fff
 HTMLHELP ?=
-LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -56,7 +55,6 @@ EXTRASRCPREREQ ?=
 MANSRC ?= Source
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 SRCS ?= UtilSrc.bbt
 
@@ -79,7 +77,6 @@ LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-CP := cp
 CD := cd
 RSYNC := rsync
 MANTOOLS := $(SFTOOLS_BIN)/mantools
@@ -107,7 +104,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Build everything, but don't package it for release.
 
-all: application documentation
+all: application licence documentation
 
 # Build the application and its supporting binary files.
 
@@ -156,11 +153,6 @@ else
 endif
 endif
 
-$(OUTDIR)/$(LICENCE): $(LICSRC)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
-
-
 # Build the release Zip file.
 
 release: clean all
@@ -184,11 +176,10 @@ endif
 
 # Clean targets
 
-clean::
+clean: clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
-	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(HTMLHELP),)
 	$(RM) $(OUTDIR)/$(HTMLHELP)
 endif

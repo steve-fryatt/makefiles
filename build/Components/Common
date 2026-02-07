@@ -34,6 +34,8 @@
 # $(ARCHIVE) should be set to a base name for any output archive files which
 # may be generated: usually the name of the project, such as "myapp".
 #
+# $(OUTDIR) should be set to the name of the folder to take the built objects.
+#
 # $(PACKAGE) may be set to the name of a package file (eg. "Locate"), in which
 # case packaging information will be obtained.
 #
@@ -45,9 +47,14 @@ ifeq ($(ARCHIVE),)
 $(error Common rules require ARCHIVE to be set)
 endif
 
+ifeq ($(OUTDIR),)
+$(error Common rules require OUTDIR to be set)
+endif
+
 # Set some generally useful paths to utilities.
 
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+CP := cp
 RM := rm -rf
 
 # Set up escape sequences for colouring terminal output. These values are used
@@ -171,3 +178,32 @@ ifneq ($(BUZIPFILE),)
 	@$(RM) ../$(BUZIPFILE)
 	@$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 endif
+
+# Rules to handle copying and cleaning the licence.
+#
+# The caller can set $(LICENCE) and $(LICSRC) if they wish, or standard defaults
+# will be used.
+
+.PHONY: licence clean-licence
+
+LICENCE ?= Licence,fff
+LICSRC ?= Licence
+
+# The rule to copy the licence over from $(LICSRC) in the root of the project
+# to $(OUTDIR)/$(LICENCE).
+#
+# licence should be a prerequisite of the all target.
+
+licence: $(OUTDIR)/$(LICENCE)
+
+$(OUTDIR)/$(LICENCE): $(LICSRC)
+	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
+	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
+
+# The rule to clean the copied licence file
+#
+# clean-licence should be a prerequisite of the clean target.
+
+clean-licence:
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(LICENCE))
+	$(RM) $(OUTDIR)/$(LICENCE)

@@ -51,7 +51,6 @@ SHHELP ?=
 HTHELP ?=
 HTMLHELP ?=
 README ?= ReadMe,fff
-LICENCE ?= Licence,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -65,7 +64,6 @@ READMEHDR ?= Header
 FINDHELPSRC ?= Help.bbt
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 OBJS ?= main.o
 
@@ -90,7 +88,6 @@ SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h
 ECHO := echo
 PRINTF := printf
 MKDIR := mkdir -p
-CP := cp
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
@@ -125,7 +122,7 @@ include $(SHARED_COMPONENTS)/Menus
 
 # Build everything, but don't package it for release.
 
-all: application documentation
+all: application licence documentation
 
 # Build the application and its supporting binary files.
 
@@ -247,7 +244,7 @@ endif
 
 # Clean targets
 
-clean: clean-menus clean-subs
+clean: clean-documentation clean-licence clean-menus clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)

@@ -46,7 +46,6 @@ APP ?=
 MODULE ?= Module,ffa
 TEXTHELP ?= !Help,fff
 README ?= ReadMe,fff
-LICENCE ?= Licence,fff
 SUBS ?=
 ADDITIONS ?=
 EXTRASRC ?=
@@ -60,7 +59,6 @@ MANSPR ?= ManSprite
 READMEHDR ?= Header
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
-LICSRC ?= Licence
 
 OBJS ?= Source.o
 
@@ -87,7 +85,6 @@ ECHO := echo
 PRINTF := printf
 CC := gcc
 MKDIR := mkdir -p
-CP := cp
 CD := cd
 RSYNC := rsync
 MANTOOLS := $(SFTOOLS_BIN)/mantools
@@ -117,7 +114,7 @@ include $(SHARED_COMPONENTS)/Substitutions
 
 # Build everything, but don't package it for release.
 
-all: application documentation
+all: application licence documentation
 
 # Build the application and its supporting binary files.
 
@@ -177,10 +174,6 @@ else
 endif
 endif
 
-$(OUTDIR)/$(LICENCE): $(LICSRC) $(OUTDIR)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
-
 
 # Build the release Zip file.
 
@@ -205,7 +198,7 @@ endif
 
 # Clean targets
 
-clean: clean-subs
+clean: clean-licence clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 ifneq ($(APP),)
@@ -217,7 +210,6 @@ else
 	$(RM) $(OUTDIR)/$(MODULE)
 endif
 	$(RM) $(OUTDIR)/$(README)
-	$(RM) $(OUTDIR)/$(LICENCE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)
