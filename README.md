@@ -47,6 +47,8 @@ Within `Basic` and `CApp`, it is possible to pass a set of Wimp menu definitions
 
 The menu source file should be stored within the `MENUDIR` folder, which by default is `menus/` in the root of the project. The name of the file should be placed in `MENUSRC`, which if not set explicitly defaults to `menudef`.
 
+[MenuGen](https://github.com/steve-fryatt/menugen) is called via the `MENUGEN` variable, and any flags which need to be passed to it can be set in the `MENUGENFLAGS` variable.
+
 ### Documentation
 
 The documentation will be built using either [Mantools](https://github.com/steve-fryatt/mantools) or [XMLMan](https://github.com/steve-fryatt/xmlman). The source files should be pointed to by the `MANSRC` variable, which is either the name of a single file, or a space-separated list if the manual source comprises more than one file. In either case, the first name in the list is passed to the manual build tool, whilst the rest are additional source files used by Make to trigger a re-build of the outputs. If the first filename ends with `.xml` then XMLMan will be used for the build; otherwise, Mantools will be used. The files are all assumed to be within the manual source folder.

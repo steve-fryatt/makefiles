@@ -21,10 +21,17 @@
 # permissions and limitations under the Licence.
 
 # Common code for Wimp menu generation
+
+MENUGEN := $(SFTOOLS_BIN)/menugen
+MENUGENFLAGS ?=
+
+# On entry, $(MENUSRC) should be either unset, empty or the name of a file
+# within $(MENUDIR) which contains the menu definitions.
 #
+# $(MENUS) should be the name of the generated menu data file.
 #
-# On entry, $(MENUS) should be either unset, empty or the name of a file within
-# $(MENUDIR) which contains the menu definitions.
+# $(MENUFLAGS) should be set to any flags which need to be passed to MenuGen
+# when it is run.
 #
 # The $(OUTDIR), $(APP) and $(UKRES) variables should be set between them to
 # point to the appropriate UK resources folder -- usually this is done by
@@ -32,10 +39,28 @@
 #   OUTDIR = build
 #   APP = !AppDir
 #   UKRES = Resources/UK
+#   MENUS = Menus,ffd
 #
 # In the calling Makefile, $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) should be a
 # prerequisite for the application target, while clean-menus should be a
 # prerequisite for the clean target.
+
+MENUS ?= Menus,ffd
+MENUSRC ?= menudef
+MENUDIR ?= menus
+MENUFLAGS ?=
+
+ifeq ($(OUTDIR),)
+$(error Menus require OUTDIR to be set)
+endif
+
+ifeq ($(APP),)
+$(error Menus require APP to be set)
+endif
+
+ifeq ($(UKRES),)
+$(error Menus require UKRES to be set)
+endif
 
 # The rule to rebuild the menu definition file, looking at the source from
 # $(MENUDIR)/$(MENUSRC)

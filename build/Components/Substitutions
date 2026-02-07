@@ -21,8 +21,9 @@
 # permissions and limitations under the Licence.
 
 # Common code for basic File Substitutions
-#
-#
+
+SED := sed
+
 # On entry, $(SUBS) should be either unset, empty or a list of leafnames of
 # files within $(SUBDIR) which need to have substitutions made to them.
 #
@@ -35,6 +36,19 @@
 #
 # In the calling Makefile, $(SUBS) should be a prerequisite for the application
 # target, while clean-subs should be a prerequisite for the clean target.
+
+# Make sure the variables that we need exist.
+
+SUBS ?=
+SUBDIR ?= subs
+
+ifeq ($(OUTDIR),)
+$(error Substitutions require OUTDIR to be set)
+endif
+
+ifeq ($(VERSION),)
+$(error Substitutions require a VERSION to be set)
+endif
 
 # Prefix all of the leafnames in $(SUBS) with the target folder: either
 # $(APP)/$(OUTDIR) or just $(OUTDIR)/ if $(APP) is unset.

@@ -94,7 +94,6 @@ ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-MENUGEN := $(SFTOOLS_BIN)/menugen
 TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
@@ -109,7 +108,6 @@ SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
-MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
 HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 

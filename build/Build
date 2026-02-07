@@ -81,7 +81,6 @@ ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-MENUGEN := $(SFTOOLS_BIN)/menugen
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
 XMLMAN := $(SFTOOLS_BIN)/xmlman

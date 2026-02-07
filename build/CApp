@@ -45,7 +45,6 @@ PACKAGELOC ?= Misc
 APP ?= !App
 UKRES ?= Resources/UK
 RUNIMAGE ?= !RunImage,ff8
-MENUS ?= Menus,ffd
 FINDHELP ?= !Help,ffb
 TEXTHELP ?= HelpText,fff
 SHHELP ?=
@@ -53,7 +52,6 @@ HTHELP ?=
 HTMLHELP ?=
 README ?= ReadMe,fff
 LICENCE ?= Licence,fff
-SUBS ?=
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -64,7 +62,6 @@ EXTRASRCPREREQ ?=
 MANSRC ?= Source
 MANSPR ?= ManSprite
 READMEHDR ?= Header
-MENUSRC ?= menudef
 FINDHELPSRC ?= Help.bbt
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
@@ -75,11 +72,9 @@ OBJS ?= main.o
 # Set up the various build directories.
 
 SRCDIR := src
-MENUDIR := menus
 MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
-SUBDIR := subs
 PKGDIR := package
 PKGTREEDIR := Apps
 PKGCTRLDIR := RiscPkg
@@ -99,13 +94,11 @@ RM := rm -rf
 CP := cp
 CD := cd
 RSYNC := rsync
-SED := sed
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
 MANTOOLS := $(SFTOOLS_BIN)/mantools
 BINDHELP := $(SFTOOLS_BIN)/bindhelp
 TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-MENUGEN := $(SFTOOLS_BIN)/menugen
 TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
@@ -124,7 +117,7 @@ MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
 HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
-# Bring in support for shared tasks.
+# Include some components common to all the shared Makefiles.
 
 include $(SHARED_COMPONENTS)/Common
 
