@@ -41,6 +41,12 @@ The `VERSION` variable can be set to a `n.nn` value (eg. `VERSION=1.23`) when ca
 
 Some scripts allow the `TARGET` variable to be set to `linux` or `riscos` to determine the type of binary to be generated.
 
+### Menu generation
+
+Within `Basic` and `CApp`, it is possible to pass a set of Wimp menu definitions to [MenuGen](https://github.com/steve-fryatt/menugen) and have them turned into a binary menu data file. The binary file will be written to `OUTPUT/APP/UKRES/MENUS` - that is, within the target application's UK Resources folder. For this to work, `APP` should be set to the name of the application folder; `OUTPUT` defaults to `build`, and `UKRES` defaults to `Resources/UK`.
+
+The menu source file should be stored within the `MENUDIR` folder, which by default is `menus/` in the root of the project. The name of the file should be placed in `MENUSRC`, which if not set explicitly defaults to `menudef`.
+
 ### Documentation
 
 The documentation will be built using either [Mantools](https://github.com/steve-fryatt/mantools) or [XMLMan](https://github.com/steve-fryatt/xmlman). The source files should be pointed to by the `MANSRC` variable, which is either the name of a single file, or a space-separated list if the manual source comprises more than one file. In either case, the first name in the list is passed to the manual build tool, whilst the rest are additional source files used by Make to trigger a re-build of the outputs. If the first filename ends with `.xml` then XMLMan will be used for the build; otherwise, Mantools will be used. The files are all assumed to be within the manual source folder.
@@ -77,7 +83,7 @@ in its Makefile before including `CApp`.
 
 ### Obey file substitutions
 
-Within `Basic`, `CApp` and `Module` it is possible to insert the build version into Obey files within the `OUTPUT` folder. If `APP` is set to the application name, then the resulting files will be placed within `$OUTPUT/$APP/` - that is, within the root of the application folder.
+Within `Basic`, `CApp` and `Module` it is possible to insert the build version into Obey files within the `OUTPUT` folder. If `APP` is set to the name of the application folder, then the resulting files will be placed within `OUTPUT/APP/` - that is, within the root of the application folder.
 
 The files to be substituted should be stored within the `SUBDIR` folder, which by default is `subs/` in the root of the project, and listed in `SUBS`. To process an application's standard !Boot and !Run files, the source files would usually be saved as `subs/!Boot,feb` and `subs/!Run,feb`, and `SUBS` set to
 
@@ -92,7 +98,6 @@ then the resulting files will be written to `build/!App/!Boot,feb` and `build/!A
 Within each of the source files, any occurrences of the text `{{VERSION}}` will be replaced with the version number associated with the build: either the value passed in with the `VERSION` variable, or the Git commit hash. This will most likely be used for setting the `App$Version` system variable, for example:
 
     Set MyApp$Version "{{VERSION}}"
-
 
 Licence
 -------

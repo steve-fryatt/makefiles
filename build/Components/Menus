@@ -1,0 +1,60 @@
+# Copyright 2010-2026, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Common code for Wimp menu generation
+#
+#
+# On entry, $(MENUS) should be either unset, empty or the name of a file within
+# $(MENUDIR) which contains the menu definitions.
+#
+# The $(OUTDIR), $(APP) and $(UKRES) variables should be set between them to
+# point to the appropriate UK resources folder -- usually this is done by
+#
+#   OUTDIR = build
+#   APP = !AppDir
+#   UKRES = Resources/UK
+#
+# In the calling Makefile, $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) should be a
+# prerequisite for the application target, while clean-menus should be a
+# prerequisite for the clean target.
+
+# The rule to rebuild the menu definition file, looking at the source from
+# $(MENUDIR)/$(MENUSRC)
+#
+# $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) should be a prerequisite of the application
+# target.
+
+ifneq ($(MENUS),)
+$(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
+	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
+	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
+endif
+
+# The rule to clean the generated menu file.
+#
+# clean-menus should be a prerequisite of the clean target.
+
+clean-menus:
+ifneq ($(MENUS),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS))
+	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
+endif

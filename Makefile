@@ -35,6 +35,7 @@ EXECUTABLES =				\
 	Cross				\
 	Module				\
 	Components/Common		\
+	Components/Menus		\
 	Components/Substitutions	\
 
 TARGETFOLDER = $(SFTOOLS_MAKE)

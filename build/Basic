@@ -132,9 +132,10 @@ SRCZIPFILE := $(ARCHIVE)$(RELEASE)src.zip
 PKGZIPFILE := $(PACKAGE)_$(PKG_VERSION).zip
 BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
-# Expand substitution target files.
+# Bring in support for shared tasks.
 
 include $(SHARED_COMPONENTS)/Substitutions
+include $(SHARED_COMPONENTS)/Menus
 
 # Build everything, but don't package it for release.
 
@@ -152,14 +153,6 @@ $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) \
 		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILD_INFO)'
-
-# Build the menus file.
-
-ifneq ($(MENUS),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
-	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
-	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
-endif
 
 # Build the documentation
 
@@ -250,16 +243,13 @@ backup:
 
 # Clean targets
 
-clean: clean-subs
+clean: clean-menus clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
 	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(LICENCE)
-ifneq ($(MENUS),)
-	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS)
-endif
 ifneq ($(SUBS),)
 	$(foreach SUBTARGET,$(SUBS),$(RM) $(SUBTARGET))
 endif
