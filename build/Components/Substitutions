@@ -66,7 +66,7 @@ endif
 # $(SUBS) should be a prerequisite of the application target.
 
 ifneq ($(SUBS),)
-$(SUBS): $(OUTDIR)/$(if $(APP),$(APP)/)%: $(OUTDIR)$(if $(APP),/$(APP)) $(SUBDIR)/%
+$(SUBS): $(OUTDIR)/$(if $(APP),$(APP)/)%: $(SUBDIR)/% | $(OUTDIR)$(if $(APP),/$(APP))
 	@$(call show-stage,SUBSTITUTING,$@)
 	@$(SED) 's/{{VERSION}}/$(VERSION)/' $(SUBDIR)/$(@F) > $@
 endif

@@ -184,12 +184,12 @@ $(OUTDIR):
 # appropriate rules in the calling files.
 
 ifneq ($(APP),)
-$(OUTDIR)/$(APP): $(OUTDIR)
+$(OUTDIR)/$(APP): | $(OUTDIR)
 	@$(call show-stage,CREATING,$(OUTDIR)/$(APP))
 	@$(MKDIR) $(OUTDIR)/$(APP)
 
 ifneq ($(UKRES),)
-$(OUTDIR)/$(APP)/$(UKRES): $(OUTDIR)/$(APP)
+$(OUTDIR)/$(APP)/$(UKRES): | $(OUTDIR)/$(APP)
 	@$(call show-stage,CREATING,$(OUTDIR)/$(APP)/$(UKRES))
 	@$(MKDIR) $(OUTDIR)/$(APP)/$(UKRES)
 endif

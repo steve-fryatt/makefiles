@@ -156,7 +156,7 @@ $(OUTDIR)/$(LIBRARY): $(OBJS) $(OUTDIR)
 
 -include $(OBJS:.o=.d)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR) $(EXTRASRCPREREQ)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
