@@ -1,0 +1,204 @@
+# Copyright 2010-2026, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Common code for documentation generation
+
+MANUAL ?= manual
+MANSRC ?= Source
+README ?= ReadMe,fff
+TEXTENCODE ?= AcornL1
+MANSPR ?= ManSprite
+READMEHDR ?= Header
+FINDHELPSRC ?= Help.bbt
+FINDHELP ?= !Help,ffb
+TEXTHELP ?= HelpText,fff
+SHHELP ?=
+HTHELP ?=
+HTMLHELP ?=
+
+HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
+
+BINDHELP := $(SFTOOLS_BIN)/bindhelp
+BINDHELPFLAGS := -f -r -v
+
+ifeq ($(OUTDIR),)
+$(error Full Documentation requires OUTDIR to be set)
+endif
+
+ifeq ($(APP),)
+$(error Full Documentation requires APP to be set)
+endif
+
+ifeq ($(UKRES),)
+$(error Full Documentation requires UKRES to be set)
+endif
+
+ifeq ($(HELP_VERSION),)
+$(error Full Documentation requires a HELP_VERSION to be set)
+endif
+
+ifeq ($(HELP_DATE),)
+$(error Full Documentation requires a HELP_DATE to be set)
+endif
+
+ifeq ($(TOKENIZE),)
+$(error Full Documentation requires TOKENIZE to be available)
+endif
+
+ifeq ($(MANTOOLS),)
+$(error Full Documentation requires MANTOOLS to be available)
+endif
+
+ifeq ($(XMLMAN),)
+$(error Full Documentation requires XMLMAN to be available)
+endif
+
+ifeq ($(TEXTMERGE),)
+$(error Full Documentation requires TEXTMERGE to be available)
+endif
+
+ifeq ($(CP),)
+$(error Full Documentation requires CP to be available)
+endif
+
+ifeq ($(RM),)
+$(error Full Documentation requires RM to be available)
+endif
+
+# Build the documentation
+
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
+
+# In the calling Makefile, documentation should be a prerequesite of the rule
+# to build all.
+
+.PHONY: documentation
+
+documentation:								\
+		$(OUTDIR)/$(APP)/$(FINDHELP)				\
+		$(OUTDIR)/$(README)					\
+		$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)			\
+		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))	\
+		$(if $(HTHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))	\
+		$(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+
+# Build FindHelp.
+
+$(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC) | $(OUTDIR)/$(APP)
+	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
+	@$(TOKENIZE) $(HELPTOKFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
+
+# Build the text help.
+
+$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANSRC) | $(OUTDIR)/$(APP)/$(UKRES)
+	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
+else
+	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+
+# Build any StrongHelp help.
+
+ifneq ($(SHHELP),)
+$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANSRC) $(MANUAL)/$(MANSPR) | $(OUTDIR)/$(APP)/$(UKRES)
+	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) -encoding AcornL1 \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
+else
+	@$(MANTOOLS) -MSTRONG -I$(firstword $(MANSRC)) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
+	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
+	@$(RM) SHTemp
+endif
+endif
+
+# Copy the readme file over.
+
+$(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) | $(OUTDIR)
+	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
+	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
+
+# Build any HTML Help
+
+ifneq ($(HTHELP),)
+$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANSRC) | $(OUTDIR)/$(APP)/$(UKRES)
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
+else
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+endif
+
+ifneq ($(HTMLHELP),)
+$(OUTDIR)/$(HTMLHELP): $(MANSRC) | $(OUTDIR)
+	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
+ifneq ($(findstring .xml, $(MANFILE)),)
+	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
+			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
+else
+	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
+			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
+endif
+endif
+
+# The rule to clean the generated documentation.
+#
+# clean-documentation should be a prerequisite of the clean target.
+
+.PHONY: clean-documentation
+
+clean-documentation:
+# TODO -- Should we just do "CLEANING documentation" and then enclose the
+# rest in ifneq ($(OUTDIR), )... and so on?
+
+ifneq ($(FINDHELP),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(FINDHELP))
+	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
+endif
+ifneq ($(TEXTHELP),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
+	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
+endif
+ifneq ($(README),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(README))
+	$(RM) $(OUTDIR)/$(README)
+endif
+ifneq ($(SHHELP),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
+	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)
+endif
+ifneq ($(HTHELP),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
+	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)
+endif
+ifneq ($(HTMLHELP),)
+	@$(call show-stage, CLEANING, $(OUTDIR)/$(HTMLHELP))
+	$(RM) $(OUTDIR)/$(HTMLHELP)
+endif

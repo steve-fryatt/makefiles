@@ -79,20 +79,13 @@ INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
 # Build Tools
 
 ECHO := echo
-PRINTF := printf
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
 AR := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*riscos-ar)
 INSTALL := $(GCCSDK_INSTALL_ENV)/ro-install
-MANTOOLS := $(SFTOOLS_BIN)/mantools
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -101,9 +94,7 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BINDHELPFLAGS := -f -r -v
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
-HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 
 # Include some components common to all the shared Makefiles.
 

@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release
+.PHONY: all clean application release
 
 .DEFAULT_GOAL = all
 
@@ -45,12 +45,6 @@ PACKAGELOC ?= Misc
 APP ?= !App
 UKRES ?= Resources/UK
 RUNIMAGE ?= !RunImage,ff8
-FINDHELP ?= !Help,ffb
-TEXTHELP ?= HelpText,fff
-SHHELP ?=
-HTHELP ?=
-HTMLHELP ?=
-README ?= ReadMe,fff
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -58,10 +52,6 @@ EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
-MANSRC ?= Source
-MANSPR ?= ManSprite
-READMEHDR ?= Header
-FINDHELPSRC ?= Help.bbt
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
 
@@ -70,7 +60,6 @@ OBJS ?= main.o
 # Set up the various build directories.
 
 SRCDIR := src
-MANUAL := manual
 OBJDIR := obj
 OUTDIR := build
 PKGDIR := package
@@ -86,18 +75,11 @@ SWIDEFS := -swis $(GCCSDK_INSTALL_CROSSBIN)/../arm-unknown-riscos/include/swis.h
 # Build Tools
 
 ECHO := echo
-PRINTF := printf
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
 CC := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*gcc)
-MANTOOLS := $(SFTOOLS_BIN)/mantools
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -106,10 +88,11 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BINDHELPFLAGS := -f -r -v
-MENUGENFLAGS := -d -m
 TOKENIZEFLAGS +=  -verbose -warn pV -swi $(SWIDEFS)
-HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
+
+# Create new format menu files.
+
+MENUGENFLAGS := -d -m
 
 # Include some components common to all the shared Makefiles.
 
@@ -119,6 +102,7 @@ include $(SHARED_COMPONENTS)/Common
 
 include $(SHARED_COMPONENTS)/Substitutions
 include $(SHARED_COMPONENTS)/Menus
+include $(SHARED_COMPONENTS)/FullDocs
 
 # Build everything, but don't package it for release.
 
@@ -149,76 +133,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
 	@rm -f $(@:.o=.d).tmp
 
-# Build the documentation
-
-MANFILE := $(firstword $(MANSRC))
-MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
-
-documentation: $(OUTDIR)/$(APP)/$(FINDHELP) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
-		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)) $(if $(HTHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)) \
-		$(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
-
-$(OUTDIR)/$(APP)/$(FINDHELP): $(MANUAL)/$(FINDHELPSRC)
-	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(FINDHELP))
-	@$(TOKENIZE) $(HELPTOKFLAGS) $(MANUAL)/$(FINDHELPSRC) -out $(OUTDIR)/$(APP)/$(FINDHELP)
-
-$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP): $(MANSRC)
-	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-
-ifneq ($(SHHELP),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP): $(MANSRC) $(MANUAL)/$(MANSPR)
-	@$(call show-stage,STRONGHELP MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -strong $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MSTRONG -I$(firstword $(MANSRC)) -OSHTemp -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-	@$(CP) $(MANUAL)/$(MANSPR) SHTemp/Sprites,ff9
-	@$(BINDHELP) SHTemp $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP) $(BINDHELPFLAGS)
-	@$(RM) SHTemp
-endif
-endif
-
-$(OUTDIR)/$(README): $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR)
-	@$(call show-stage,CREATE README,$(OUTDIR)/$(README))
-	@$(TEXTMERGE) $(OUTDIR)/$(README) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP) $(MANUAL)/$(READMEHDR) 5
-
-ifneq ($(HTHELP),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP): $(MANSRC)
-	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-endif
-
-ifneq ($(HTMLHELP),)
-$(OUTDIR)/$(HTMLHELP): $(MANSRC)
-	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-endif
-
-$(OUTDIR)/$(LICENCE): $(LICSRC)
-	@$(call show-stage,LICENCE,$(OUTDIR)/$(LICENCE))
-	@$(CP) $(LICSRC) $(OUTDIR)/$(LICENCE)
-
-
 # Build the release Zip file.
 
 release: clean all
@@ -247,19 +161,6 @@ clean: clean-documentation clean-licence clean-menus clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
-	$(RM) $(OUTDIR)/$(APP)/$(FINDHELP)
-	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(TEXTHELP)
-	$(RM) $(OUTDIR)/$(README)
-	$(RM) $(OUTDIR)/$(LICENCE)
-ifneq ($(SHHELP),)
-	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP)
-endif
-ifneq ($(HTHELP),)
-	$(RM) $(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP)
-endif
-ifneq ($(HTMLHELP),)
-	$(RM) $(OUTDIR)/$(HTMLHELP)
-endif
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)

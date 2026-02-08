@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release install
+.PHONY: all clean application release install
 
 .DEFAULT_GOAL = all
 
@@ -65,7 +65,6 @@ EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
-MANSRC ?= Source
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
 
@@ -74,7 +73,6 @@ OBJS ?= main.o
 # Set up the various build directories.
 
 SRCDIR := src
-MANUAL := manual
 OBJROOT := obj
 OBJLINUX := linux
 OBJRO := ro
@@ -104,8 +102,6 @@ endif
 # Build Tools
 
 ECHO := echo
-PRINTF := printf
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
 
@@ -115,10 +111,8 @@ else
   CC := gcc
 endif
 
-MANTOOLS := $(SFTOOLS_BIN)/mantools
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -136,6 +130,10 @@ PKGRSFLAGS := -av --exclude=*.svn*
 # Include some components common to all the shared Makefiles.
 
 include $(SHARED_COMPONENTS)/Common
+
+# Bring in support for shared tasks.
+
+include $(SHARED_COMPONENTS)/SimpleDocs
 
 # Build everything, but don't package it for release.
 
@@ -166,45 +164,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
 	@rm -f $(@:.o=.d).tmp
 
-# Create a folder to hold the object files.
-
-$(OBJDIR):
-	$(MKDIR) $(OBJDIR)
-
-# Create a folder to take the output.
-
-$(OUTDIR):
-	$(MKDIR) $(OUTDIR)
-
-# Build the documentation
-
-MANFILE := $(firstword $(MANSRC))
-MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
-
-documentation: $(OUTDIR) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
-
-$(OUTDIR)/$(README): $(MANSRC)
-	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding $(TEXTENCODE) \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-
-ifneq ($(HTMLHELP),)
-$(OUTDIR)/$(HTMLHELP): $(MANSRC)
-	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(HTMLHELP) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-endif
-
 # Build the release Zip file.
 
 release: clean all
@@ -234,14 +193,10 @@ install: clean all
 
 # Clean targets
 
-clean: clean-licence
+clean: clean-documentation clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
-	$(RM) $(OUTDIR)/$(README)
-ifneq ($(HTMLHELP),)
-	$(RM) $(OUTDIR)/$(HTMLHELP)
-endif
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)

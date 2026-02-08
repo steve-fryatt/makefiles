@@ -44,6 +44,8 @@ MENUGENFLAGS ?=
 # In the calling Makefile, $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) should be a
 # prerequisite for the application target, while clean-menus should be a
 # prerequisite for the clean target.
+#
+# $(MENUGEN) and $(RM) should point to their respective utilities.
 
 MENUS ?= Menus,ffd
 MENUSRC ?= menudef
@@ -60,6 +62,14 @@ endif
 
 ifeq ($(UKRES),)
 $(error Menus require UKRES to be set)
+endif
+
+ifeq ($(MENUGEN),)
+$(error Menus require MENUGEN to be available)
+endif
+
+ifeq ($(RM),)
+$(error Menus require RM to be available)
 endif
 
 # The rule to rebuild the menu definition file, looking at the source from

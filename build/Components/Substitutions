@@ -36,6 +36,8 @@ SED := sed
 #
 # In the calling Makefile, $(SUBS) should be a prerequisite for the application
 # target, while clean-subs should be a prerequisite for the clean target.
+#
+# $(SED) and $(RM) should point to their respective utilities.
 
 # Make sure the variables that we need exist.
 
@@ -48,6 +50,14 @@ endif
 
 ifeq ($(VERSION),)
 $(error Substitutions require a VERSION to be set)
+endif
+
+ifeq ($(SED),)
+$(error Substitutions require SED to be available)
+endif
+
+ifeq ($(RM),)
+$(error Substitutions require RM to be available)
 endif
 
 # Prefix all of the leafnames in $(SUBS) with the target folder: either

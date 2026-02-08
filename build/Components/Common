@@ -53,7 +53,15 @@ endif
 
 # Set some generally useful paths to utilities.
 
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
+MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
+XMLMAN := $(wildcard $(SFTOOLS_BIN)/xmlman)
+TEXTMERGE := $(wildcard $(SFTOOLS_BIN)/textmerge)
+TOKENIZE := $(wildcard $(SFTOOLS_BIN)/tokenize)
+
+ZIP := $(wildcard $(GCCSDK_INSTALL_ENV)/bin/zip)
+
+PRINTF := printf
+MKDIR := mkdir -p
 CP := cp
 RM := rm -rf
 

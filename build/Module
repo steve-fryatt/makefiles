@@ -82,17 +82,11 @@ ASOPTIONS ?=
 AS := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*asasm)
 STRIP := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*strip)
 ECHO := echo
-PRINTF := printf
 CC := gcc
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
-MANTOOLS := $(SFTOOLS_BIN)/mantools
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -102,7 +96,6 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BINDHELPFLAGS := -f -r -v
 
 # Include some components common to all the shared Makefiles.
 

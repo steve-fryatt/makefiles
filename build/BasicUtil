@@ -33,7 +33,7 @@
 
 SHARED_COMPONENTS ?= $(SFTOOLS_MAKE)/Components
 
-.PHONY: all clean application documentation release
+.PHONY: all clean application release
 
 .DEFAULT_GOAL = all
 
@@ -43,8 +43,6 @@ ARCHIVE ?= utility
 PACKAGE ?=
 PACKAGELOC ?= Misc
 RUNIMAGE ?= utility,ffb
-README ?= ReadMe,fff
-HTMLHELP ?=
 ADDITIONS ?=
 EXTRASRC ?=
 EXTRAPREREQ ?=
@@ -52,7 +50,6 @@ EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
-MANSRC ?= Source
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
 
@@ -61,7 +58,6 @@ SRCS ?= UtilSrc.bbt
 # Set up the various build directories.
 
 SRCDIR := src
-MANUAL := manual
 OUTDIR := build
 PKGDIR := package
 PKGTREEDIR := Apps
@@ -75,17 +71,10 @@ LIBPATHS := BASIC:$(SFTOOLS_BASIC)/
 # Build Tools
 
 ECHO := echo
-PRINTF := printf
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
-MANTOOLS := $(SFTOOLS_BIN)/mantools
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-TOKENIZE := $(SFTOOLS_BIN)/tokenize
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -93,14 +82,16 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BINDHELPFLAGS := -f -r -v
 TOKENIZEFLAGS += -verbose -warn pV -swi $(SWIDEFS)
-HELPTOKFLAGS := $(TOKENIZEFLAGS) -crunch IT
 FULLTOKFLAGS := $(TOKENIZEFLAGS) -crunch EIrW
 
 # Include some components common to all the shared Makefiles.
 
 include $(SHARED_COMPONENTS)/Common
+
+# Bring in support for shared tasks.
+
+include $(SHARED_COMPONENTS)/SimpleDocs
 
 # Build everything, but don't package it for release.
 
@@ -118,40 +109,6 @@ $(OUTDIR)/$(RUNIMAGE): $(OUTDIR) $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(RUNIMAGE) \
 		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILD_INFO)'
-
-# Create a folder to take the output.
-
-$(OUTDIR):
-	$(MKDIR) $(OUTDIR)
-
-# Build the documentation
-
-MANFILE := $(firstword $(MANSRC))
-MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
-
-documentation: $(OUTDIR) $(OUTDIR)/$(README) $(OUTDIR)/$(LICENCE) $(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
-
-$(OUTDIR)/$(README): $(MANSRC)
-	@$(call show-stage,TEXT MANUAL,$(OUTDIR)/$(README))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -text $(OUTDIR)/$(README) -encoding AcornL1 \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MTEXT -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(README) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-
-ifneq ($(HTMLHELP),)
-$(OUTDIR)/$(HTMLHELP): $(MANSRC)
-	@$(call show-stage,HTML MANUAL,$(OUTDIR)/$(HTMLHELP))
-ifneq ($(findstring .xml, $(MANFILE)),)
-	@$(XMLMAN) $(firstword $(MANSRC)) -html $(OUTDIR)/$(README) -encoding 7Bit \
-			-define 'version=$(HELP_VERSION)' -define 'date=$(HELP_DATE)' -define 'buildinfo=$(BUILDINFO)'
-else
-	@$(MANTOOLS) -MHTML -C../images/ -I$(firstword $(MANSRC)) -O$(OUTDIR)/$(HTMLHELP) \
-			-D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-endif
-endif
 
 # Build the release Zip file.
 
@@ -176,13 +133,9 @@ endif
 
 # Clean targets
 
-clean: clean-licence
+clean: clean-documentation clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
-	$(RM) $(OUTDIR)/$(README)
-ifneq ($(HTMLHELP),)
-	$(RM) $(OUTDIR)/$(HTMLHELP)
-endif
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGCTRLDIR)/$(PKGCTRL)

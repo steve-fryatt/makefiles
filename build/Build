@@ -69,16 +69,10 @@ PKGCTRLDIR := RiscPkg
 # Build Tools
 
 ECHO := echo
-PRINTF := printf
-MKDIR := mkdir -p
 CD := cd
 RSYNC := rsync
-MANTOOLS := $(wildcard $(SFTOOLS_BIN)/mantools)
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
 GETPKGREV := $(SFTOOLS_BIN)/getpackagerev
 MAKECONTROL := $(SFTOOLS_BIN)/makecontrol
-XMLMAN := $(SFTOOLS_BIN)/xmlman
 
 # Build Flags
 
@@ -86,7 +80,6 @@ ZIPFLAGS := -x "*/.svn/*" -r -, -9
 PKGZIPFLAGS := -x "*/.svn/*" -r -, -9
 SRCZIPFLAGS := -x "*/.svn/*" -r -9
 PKGRSFLAGS := -av --exclude=*.svn*
-BINDHELPFLAGS := -f -r -v
 
 # Include some components common to all the shared Makefiles.
 
@@ -154,7 +147,7 @@ endif
 install: clean all
 	@$(call show-stage,INSTALLING,$(TARGETFOLDER))
 	@$(MKDIR) $(TARGETFOLDER)
-	@for f in $(EXECUTABLES); do $(CP) $(OUTDIR)/$$f $(TARGETFOLDER)/$${f%$(SUFFIX)}; done
+	@for f in $(EXECUTABLES); do $(CP) -v $(OUTDIR)/$$f $(TARGETFOLDER)/$${f%$(SUFFIX)}; done
 
 # Clean targets
 

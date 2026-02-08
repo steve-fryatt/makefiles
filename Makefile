@@ -35,6 +35,8 @@ EXECUTABLES =				\
 	Cross				\
 	Module				\
 	Components/Common		\
+	Components/FullDocs		\
+	Components/SimpleDocs		\
 	Components/Menus		\
 	Components/Substitutions	\
 
