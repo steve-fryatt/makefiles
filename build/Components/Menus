@@ -69,7 +69,7 @@ endif
 # target.
 
 ifneq ($(MENUS),)
-$(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(MENUDIR)/$(MENUSRC)
+$(OUTDIR)/$(APP)/$(UKRES)/$(MENUS): $(OUTDIR)/$(APP)/$(UKRES) $(MENUDIR)/$(MENUSRC)
 	@$(call show-stage,MAKE MENUS,$(MENUDIR)/$(MENUSRC))
 	@$(MENUGEN) $(MENUDIR)/$(MENUSRC) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(MENUGENFLAGS)
 endif

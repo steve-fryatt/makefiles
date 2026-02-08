@@ -163,6 +163,38 @@ BUZIPFILE := $(ARCHIVE)$(FILE_DATE).zip
 
 $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) ***)
 
+# Rules to create the object and output folders.
+#
+# $(OBJDIR) and $(OUTDIR) should be prerequisites of all appropriate rules in
+# the calling files.
+
+ifneq ($(OBJDIR),)
+$(OBJDIR):
+	@$(call show-stage,CREATING,$(OBJDIR))
+	@$(MKDIR) $(OBJDIR)
+endif
+
+$(OUTDIR):
+	@$(call show-stage,CREATING,$(OUTDIR))
+	@$(MKDIR) $(OUTDIR)
+
+# Rules to create the App and UK Resources folders.
+#
+# $(OUTDIR)/$(APP) and $(OUTDIR)/$(APP)/$(UKRES) should be prerequisites of all
+# appropriate rules in the calling files.
+
+ifneq ($(APP),)
+$(OUTDIR)/$(APP): $(OUTDIR)
+	@$(call show-stage,CREATING,$(OUTDIR)/$(APP))
+	@$(MKDIR) $(OUTDIR)/$(APP)
+
+ifneq ($(UKRES),)
+$(OUTDIR)/$(APP)/$(UKRES): $(OUTDIR)/$(APP)
+	@$(call show-stage,CREATING,$(OUTDIR)/$(APP)/$(UKRES))
+	@$(MKDIR) $(OUTDIR)/$(APP)/$(UKRES)
+endif
+endif
+
 # A rule to build the 'backup' target, which takes all of the files within the
 # project and writes them to a dated Zip archive in the project's parent folder.
 #

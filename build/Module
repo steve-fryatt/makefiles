@@ -120,11 +120,6 @@ all: application licence documentation
 
 application: $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE) $(SUBS) $(EXTRAPREREQ)
 
-# Create the build folder.
-
-$(OUTDIR):
-	$(MKDIR) $(OUTDIR)
-
 # Build the complete Module from the object files.
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
@@ -135,9 +130,8 @@ $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS) $(OUTDIR)
 
 # Build the object files, and identify their dependencies.
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.s $(EXTRASRCPREREQ)
+$(OBJDIR)/%.o: $(SRCDIR)/%.s $(OBJDIR) $(EXTRASRCPREREQ)
 	@$(call show-stage,ASSEMBLING,$<)
-	@$(MKDIR) $(@D)
 	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' \
 			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -PreDefine 'BuildInfo SETS "\"$(BUILD_INFO)\""' -o $@ $<
 
