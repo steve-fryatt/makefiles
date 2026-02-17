@@ -126,7 +126,7 @@ $(OUTDIR)/$(if $(APP),$(APP)/)$(MODULE): $(OBJS) $(OUTDIR)
 $(OBJDIR)/%.o: $(SRCDIR)/%.s $(OBJDIR) $(EXTRASRCPREREQ)
 	@$(call show-stage,ASSEMBLING,$<)
 	@$(AS) $(ASFLAGS) $(ASOPTIONS) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' \
-			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -PreDefine 'BuildInfo SETS "\"$(BUILD_INFO)\""' -o $@ $<
+			-PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -PreDefine 'BuildInfo SETS "\"$(BUILDINFO)\""' -o $@ $<
 
 # Build the documentation
 

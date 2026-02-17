@@ -112,7 +112,7 @@ SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(SRCS) $(EXTRASRCPREREQ)
 	@$(call show-stage,TOKENIZING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(TOKENIZE) $(FULLTOKFLAGS) $(firstword $(SRCS)) -link -out $(OUTDIR)/$(APP)/$(RUNIMAGE) \
-		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILD_INFO)'
+		-path $(LIBPATHS) -define 'build_date$$=$(BUILD_DATE)' -define 'build_version$$=$(VERSION)' -define 'build_info$$=$(BUILDINFO)'
 
 # Build the release Zip file.
 
