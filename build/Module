@@ -47,10 +47,6 @@ MODULE ?= Module,ffa
 TEXTHELP ?= !Help,fff
 README ?= ReadMe,fff
 SUBS ?=
-ADDITIONS ?=
-EXTRASRC ?=
-EXTRAPREREQ ?=
-EXTRASRCPREREQ ?=
 
 # Set up the source files.
 

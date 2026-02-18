@@ -148,6 +148,38 @@ endif
 
 BUILDINFO ?=
 
+# Extra prerequisites which feed into the main application.
+#
+# If $(EXTRAPREREQ) is not set by the caller, it will be set to empty. This
+# can be used by Makefiles to force sources to be rebuilt if other relevant
+# files (such as embedded sprites or configuration files) change.
+
+EXTRAPREREQ ?=
+
+# Extra prerequisite files which can force sources to be rebuilt.
+#
+# If $(EXTRASRCPREREQ) is not set by the caller, it will be set to empty. This
+# can be used by Makefiles to force sources to be rebuilt if other relevant
+# files (such as embedded sprites or configuration files) change.
+
+EXTRASRCPREREQ ?=
+
+# Extra distribution files to be included in the release archive file.
+#
+# If $(ADDITIONS) is not set by the caller, it will be set to empty. This
+# can be used by Makefiles to supply additional folders or files which should
+# be included in the release archive.
+
+ADDITIONS ?=
+
+# Extra source files to be included in the source archive file.
+#
+# If $(EXTRASRCPREREQ) is not set by the caller, it will be set to empty. This
+# can be used by Makefiles to supply additional folders or files which should
+# be included in the source archive.
+
+EXTRASRC ?=
+
 # The archives to assemble the release files, sources and backups in.
 # If $(RELEASE) is set above, then some of the files can be given a version
 # number suffix.

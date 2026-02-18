@@ -43,10 +43,6 @@ ARCHIVE ?= utility
 PACKAGE ?=
 PACKAGELOC ?= Misc
 RUNIMAGE ?= utility,ffb
-ADDITIONS ?=
-EXTRASRC ?=
-EXTRAPREREQ ?=
-EXTRASRCPREREQ ?=
 
 # Set up the source files.
 

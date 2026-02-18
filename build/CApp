@@ -45,22 +45,14 @@ PACKAGELOC ?= Misc
 APP ?= !App
 UKRES ?= Resources/UK
 RUNIMAGE ?= !RunImage,ff8
-ADDITIONS ?=
-EXTRASRC ?=
-EXTRAPREREQ ?=
-EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
 
-OBJS ?= main.o
-
 # Set up the various build directories.
 
-SRCDIR := src
-OBJDIR := obj
 OUTDIR := build
 PKGDIR := package
 PKGTREEDIR := Apps
@@ -100,6 +92,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Bring in support for shared tasks.
 
+include $(SHARED_COMPONENTS)/C
 include $(SHARED_COMPONENTS)/Substitutions
 include $(SHARED_COMPONENTS)/Menus
 include $(SHARED_COMPONENTS)/FullDocs
@@ -114,24 +107,9 @@ application: $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OUTDIR)/$(APP)/$(UKRES)/$(MENUS) $(S
 
 # Build the complete !RunImage from the object files.
 
-OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
-
 $(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS)
 	@$(call show-stage,LINKING,$(OUTDIR)/$(APP)/$(RUNIMAGE))
 	@$(CC) $(CCFLAGS) $(LINKS) -o $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OBJS)
-
-# Build the object files, and identify their dependencies.
-
--include $(OBJS:.o=.d)
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
-	@$(call show-stage,COMPILING,$<)
-	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
-	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
-	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
-	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
-	@rm -f $(@:.o=.d).tmp
 
 # Build the release Zip file.
 

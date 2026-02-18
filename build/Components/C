@@ -1,0 +1,59 @@
+# Copyright 2010-2026, Stephen Fryatt (info@stevefryatt.org.uk)
+#
+# This file is part of SFTools Shared Makefiles:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# Common Rules for C Projects
+
+SRCDIR ?= src
+OBJDIR ?= obj
+
+OBJS ?= main.o
+
+INCLUDES ?=
+
+BUILDINFO ?=
+
+ifeq ($(CCFLAGS),)
+$(error C Projects require CCFLAGS to be set)
+endif
+
+ifeq ($(VERSION),)
+$(error C Projects require a VERSION to be set)
+endif
+
+ifeq ($(BUILD_DATE),)
+$(error C Projects require a BUILD_DATE to be set)
+endif
+
+OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
+
+# Build the object files, and identify their dependencies.
+
+-include $(OBJS:.o=.d)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
+	@$(call show-stage,COMPILING,$<)
+	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
+	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
+	@rm -f $(@:.o=.d).tmp

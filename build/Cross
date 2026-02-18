@@ -48,31 +48,23 @@ ifeq ($(TARGET),riscos)
   README ?= ReadMe,fff
   HTMLHELP ?=
   LICENCE ?= Licence,fff
-  ADDITIONS ?=
   TEXTENCODE ?= AcornL1
 else
   RUNIMAGE ?= utility
   README ?= ReadMe.txt
   HTMLHELP ?=
   LICENCE ?= Licence.txt
-  ADDITIONS ?=
   TEXTENCODE ?= UTF8
 endif
 
-EXTRASRC ?=
-EXTRAPREREQ ?=
-EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
 PKGCTRL ?= Control
 PKGCPY ?= Copyright
 
-OBJS ?= main.o
-
 # Set up the various build directories.
 
-SRCDIR := src
 OBJROOT := obj
 OBJLINUX := linux
 OBJRO := ro
@@ -133,6 +125,7 @@ include $(SHARED_COMPONENTS)/Common
 
 # Bring in support for shared tasks.
 
+include $(SHARED_COMPONENTS)/C
 include $(SHARED_COMPONENTS)/SimpleDocs
 
 # Build everything, but don't package it for release.
@@ -145,24 +138,9 @@ application: $(OUTDIR)/$(RUNIMAGE) $(EXTRAPREREQ)
 
 # Build the complete !RunImage from the object files.
 
-OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
-
 $(OUTDIR)/$(RUNIMAGE): $(OUTDIR) $(OBJDIR) $(OBJS)
 	@$(call show-stage,LINKING,$(OUTDIR)/$(RUNIMAGE))
 	@$(CC) $(CCFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS) $(LINKS)
-
-# Build the object files, and identify their dependencies.
-
--include $(OBJS:.o=.d)
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
-	@$(call show-stage,COMPILING,$<)
-	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
-	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
-	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
-	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
-	@rm -f $(@:.o=.d).tmp
 
 # Build the release Zip file.
 

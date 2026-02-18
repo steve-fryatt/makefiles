@@ -34,6 +34,7 @@ EXECUTABLES =				\
 	CLib				\
 	Cross				\
 	Module				\
+	Components/C			\
 	Components/Common		\
 	Components/FullDocs		\
 	Components/SimpleDocs		\

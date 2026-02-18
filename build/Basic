@@ -45,10 +45,6 @@ PACKAGELOC ?= Misc
 APP ?= !App
 UKRES ?= Resources/UK
 RUNIMAGE ?= !RunImage,ffb
-ADDITIONS ?=
-EXTRASRC ?=
-EXTRAPREREQ ?=
-EXTRASRCPREREQ ?=
 
 # Set up the source files.
 
