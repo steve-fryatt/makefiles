@@ -135,9 +135,8 @@ endif
 
 # Clean targets
 
-clean: clean-documentation clean-licence clean-menus clean-subs
+clean: clean-objects clean-documentation clean-licence clean-menus clean-subs
 	@$(call show-stage,CLEANING,)
-	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)

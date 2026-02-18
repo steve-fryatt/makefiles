@@ -171,9 +171,8 @@ install: clean all
 
 # Clean targets
 
-clean: clean-documentation clean-licence
+clean: clean-objects clean-documentation clean-licence
 	@$(call show-stage,CLEANING,)
-	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 ifneq ($(PACKAGE),)
 	$(RM) $(OUTDIR)/$(PKGDIR)/$(PKGTREEDIR)/$(PACKAGELOC)

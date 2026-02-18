@@ -43,6 +43,10 @@ ifeq ($(BUILD_DATE),)
 $(error C Projects require a BUILD_DATE to be set)
 endif
 
+ifeq ($(RM),)
+$(error C Projects require RM to be available)
+endif
+
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
 # Build the object files, and identify their dependencies.
@@ -57,3 +61,15 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
 	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
 	@rm -f $(@:.o=.d).tmp
+
+# The rule to clean the generated object and dependency files.
+#
+# clean-objects should be a prerequisite of the clean target.
+
+.PHONY: clean-objects
+
+clean-objects:
+ifneq ($(OBJDIR),)
+	@$(call show-stage, CLEANING, $(OBJDIR)/*)
+	$(RM) $(OBJDIR)/*
+endif

@@ -223,9 +223,8 @@ install: clean all
 
 # Clean targets
 
-clean: clean-licence
+clean: clean-objects clean-licence
 	@$(call show-stage,CLEANING,)
-	@$(RM) $(OBJDIR)/*
 	@$(RM) $(OUTDIR)/$(LIBRARY)
 	@$(RM) $(OUTDIR)/$(HDRDIR)/*
 	@$(RM) $(OUTDIR)/$(README)
