@@ -107,7 +107,7 @@ It is possible to `make backup` to dump all of the files from within the project
 
 The backup archive will be created in the _parent_ folder which contains the project. If the file already exists, _it will be deleted_ before a new archive is created.
 
-It is possible to specify the flags passed to Zip by setting the `BUZIPFLAGS` in the parent makefile. If this is not done, then suitable defaults are used.
+Zip will be called via the `ZIP` variable, and uses the GCCSDK binary which can convert `,xxx` filename suffixes into RISC OS filetypes. It is possible to specify the flags passed to Zip by setting the `BUZIPFLAGS` in the parent makefile. If this is not done, then suitable defaults are used.
 
 Licence
 -------
