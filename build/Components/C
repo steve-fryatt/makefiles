@@ -47,20 +47,40 @@ ifeq ($(RM),)
 $(error C Projects require RM to be available)
 endif
 
-OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
+# Create the subfolders within $(OBJDIR) for the application object files
+# and dependency files.
 
-# Build the object files, and identify their dependencies.
+APP_OBJ := appo
+APP_DEP := appd
 
--include $(OBJS:.o=.d)
+$(OBJDIR)/$(APP_OBJ): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_OBJ))
+	@$(MKDIR) $(OBJDIR)/$(APP_OBJ)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)
+$(OBJDIR)/$(APP_DEP): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_DEP))
+	@$(MKDIR) $(OBJDIR)/$(APP_DEP)
+
+# Identify the dependency and object files from the $(OBJS) list.
+
+DEPS := $(addprefix $(OBJDIR)/$(APP_DEP)/, $(OBJS:.o=.d))
+OBJS := $(addprefix $(OBJDIR)/$(APP_OBJ)/, $(OBJS))
+
+# A rule to build the application object files from the C sources.
+#
+# Alongside compiling the source code, build dependecny lists for each of the
+# object files and include them into the Makefile.
+
+-include $(DEPS)
+
+$(OBJDIR)/$(APP_OBJ)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJ) $(OBJDIR)/$(APP_DEP)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(@:.o=.d)
-	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
-	@sed -e 's|.*:|$@:|' < $(@:.o=.d).tmp > $(@:.o=.d)
-	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
-	@rm -f $(@:.o=.d).tmp
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
+	@mv -f $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d) $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp > $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
+	@rm -f $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp
 
 # The rule to clean the generated object and dependency files.
 #
