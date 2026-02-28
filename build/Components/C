@@ -47,24 +47,105 @@ ifeq ($(RM),)
 $(error C Projects require RM to be available)
 endif
 
-# Create the subfolders within $(OBJDIR) for the application object files
+# -----------------------------------
+# This should all be optional on test
+# -----------------------------------
+
+TESTDIR ?= test
+
+TEST_SRCDIR ?= tests
+TEST_ABSDIR ?= absolute
+TEST_UNITYDIR ?= unity
+
+TEST_PREFIX := test_
+TEST_ABSSUFFIX := ,ff8
+
+TEST_DEFINES = -DUNIT_TESTING
+TEST_INCLUDES = -I$(SRCDIR) -I$(TESTDIR)/$(TEST_UNITYDIR) $(INCLUDES)
+
+# Find the test_*.c source files.
+
+TEST_SRCS = $(wildcard $(TESTDIR)/$(TEST_SRCDIR)*.c)
+TEST_ABSS = $(patsubst $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c, $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TARGET_EXTENSION), $(TEST_SRCS))
+
+# Create the subfolders within $(OBJDIR) for the test object files
 # and dependency files.
 
-APP_OBJ := appo
-APP_DEP := appd
+TEST_OBJDIR := testo
+TEST_DEPDIR := testd
 
-$(OBJDIR)/$(APP_OBJ): | $(OBJDIR)
-	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_OBJ))
-	@$(MKDIR) $(OBJDIR)/$(APP_OBJ)
+$(OBJDIR)/$(TEST_OBJDIR): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(TEST_OBJDIR))
+	@$(MKDIR) $(OBJDIR)/$(TEST_OBJDIR)
 
-$(OBJDIR)/$(APP_DEP): | $(OBJDIR)
-	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_DEP))
-	@$(MKDIR) $(OBJDIR)/$(APP_DEP)
+$(OBJDIR)/$(TEST_DEPDIR): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(TEST_DEPDIR))
+	@$(MKDIR) $(OBJDIR)/$(TEST_DEPDIR)
 
 # Identify the dependency and object files from the $(OBJS) list.
 
-DEPS := $(addprefix $(OBJDIR)/$(APP_DEP)/, $(OBJS:.o=.d))
-OBJS := $(addprefix $(OBJDIR)/$(APP_OBJ)/, $(OBJS))
+TEST_DEPS := $(addprefix $(OBJDIR)/$(TEST_DEPDIR)/, $(OBJS:.o=.d))
+TEST_OBJS := $(addprefix $(OBJDIR)/$(TEST_OBJDIR)/, $(OBJS))
+
+.PHONY: test
+test: $(TEST_ABSS) $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+
+$(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TARGET_EXTENSION): $(OBJDIR)/$(TEST_OBJDIR)/$(TESTPREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/unity.o $(TEST_OBJS)
+	@$(call show-stage,LINKING,$@)
+	@$(CC) $(CCFLAGS) $(LINKS) -o $@ $^
+
+
+
+
+
+# Make the test object files.
+
+#$(PATHO)%.o:: $(PATHT)%.c
+#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+
+# Make the target object files.
+
+#$(PATHO)$(TESTPREFIX)$(TARGETPREFIX)%.o:: $(PATHS)%.c
+#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+
+# Make the Unity object files.
+
+#$(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
+#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+
+# Make the dependency lists.
+
+#$(PATHD)%.d:: $(PATHT)%.c
+#	$(DEPEND) $(CCFLAGS) $(INCLUDES) $(DEFINES) $@ $<
+
+
+
+
+
+
+
+# -----------------------------------
+# This should all be optional on test
+# -----------------------------------
+
+# Create the subfolders within $(OBJDIR) for the application object files
+# and dependency files.
+
+APP_OBJDIR := appo
+APP_DEPDIR := appd
+
+$(OBJDIR)/$(APP_OBJDIR): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_OBJDIR))
+	@$(MKDIR) $(OBJDIR)/$(APP_OBJDIR)
+
+$(OBJDIR)/$(APP_DEPDIR): | $(OBJDIR)
+	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_DEPDIR))
+	@$(MKDIR) $(OBJDIR)/$(APPAPP_DEPDIR_DEP)
+
+# Identify the dependency and object files from the $(OBJS) list.
+
+DEPS := $(addprefix $(OBJDIR)/$(APP_DEPDIR)/, $(OBJS:.o=.d))
+OBJS := $(addprefix $(OBJDIR)/$(APP_OBJDIR)/, $(OBJS))
 
 # A rule to build the application object files from the C sources.
 #
@@ -73,14 +154,14 @@ OBJS := $(addprefix $(OBJDIR)/$(APP_OBJ)/, $(OBJS))
 
 -include $(DEPS)
 
-$(OBJDIR)/$(APP_OBJ)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJ) $(OBJDIR)/$(APP_DEP)
+$(OBJDIR)/$(APP_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJDIR) $(OBJDIR)/$(APPAPP_DEPDIR_DEP)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
-	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
-	@mv -f $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d) $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp
-	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp > $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
-	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d)
-	@rm -f $(OBJDIR)/$(APP_DEP)/$(@F:.o=.d).tmp
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d)
+	@mv -f $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d) $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d).tmp > $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d)
+	@rm -f $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d).tmp
 
 # The rule to clean the generated object and dependency files.
 #
