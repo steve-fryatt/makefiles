@@ -23,7 +23,6 @@
 # Common Rules for C Projects
 
 SRCDIR ?= src
-OBJDIR ?= obj
 
 OBJS ?= main.o
 
@@ -140,7 +139,7 @@ $(OBJDIR)/$(APP_OBJDIR): | $(OBJDIR)
 
 $(OBJDIR)/$(APP_DEPDIR): | $(OBJDIR)
 	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_DEPDIR))
-	@$(MKDIR) $(OBJDIR)/$(APPAPP_DEPDIR_DEP)
+	@$(MKDIR) $(OBJDIR)/$(APP_DEPDIR)
 
 # Identify the dependency and object files from the $(OBJS) list.
 
@@ -154,7 +153,7 @@ OBJS := $(addprefix $(OBJDIR)/$(APP_OBJDIR)/, $(OBJS))
 
 -include $(DEPS)
 
-$(OBJDIR)/$(APP_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJDIR) $(OBJDIR)/$(APPAPP_DEPDIR_DEP)
+$(OBJDIR)/$(APP_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJDIR) $(OBJDIR)/$(APP_DEPDIR)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d)

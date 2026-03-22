@@ -61,7 +61,6 @@ OBJS ?= library.o
 
 MENUDIR := menus
 MANUAL := manual
-OUTDIR := build
 PKGDIR := package
 PKGTREEDIR := Apps
 PKGCTRLDIR := RiscPkg

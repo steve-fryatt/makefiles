@@ -35,6 +35,7 @@
 # may be generated: usually the name of the project, such as "myapp".
 #
 # $(OUTDIR) should be set to the name of the folder to take the built objects.
+# If unset, it will be set to "build".
 #
 # $(PACKAGE) may be set to the name of a package file (eg. "Locate"), in which
 # case packaging information will be obtained.
@@ -42,10 +43,15 @@
 # $(GETPKGREV) should be set to the command which will be used to obtain package
 # details; if not set, no package details will be configured and $(PACKAGE) will
 # be unset.
+#
+# $(OBJDIR) may be set to the name of a folder to hold intermediate object
+# files; if unset, it will be set to "objs".
 
 ifeq ($(ARCHIVE),)
 $(error Common rules require ARCHIVE to be set)
 endif
+
+OUTDIR ?= build
 
 ifeq ($(OUTDIR),)
 $(error Common rules require OUTDIR to be set)
@@ -207,6 +213,8 @@ $(info *** Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE) *
 #
 # $(OBJDIR) and $(OUTDIR) should be prerequisites of all appropriate rules in
 # the calling files.
+
+OBJDIR ?= obj
 
 ifneq ($(OBJDIR),)
 $(OBJDIR):

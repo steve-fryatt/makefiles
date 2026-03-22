@@ -54,7 +54,6 @@ SRCS ?= UtilSrc.bbt
 # Set up the various build directories.
 
 SRCDIR := src
-OUTDIR := build
 PKGDIR := package
 PKGTREEDIR := Apps
 PKGCTRLDIR := RiscPkg

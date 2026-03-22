@@ -62,8 +62,6 @@ OBJS ?= Source.o
 
 SRCDIR := src
 MANUAL := manual
-OBJDIR := obj
-OUTDIR := build
 SUBDIR := subs
 PKGDIR := package
 PKGTREEDIR := Apps
