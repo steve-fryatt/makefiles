@@ -146,7 +146,7 @@ install: clean all
 
 # Clean targets
 
-clean: clean-licence
+clean:: clean-licence
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(LICENCE)

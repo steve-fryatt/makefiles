@@ -179,7 +179,7 @@ endif
 
 # Clean targets
 
-clean: clean-licence clean-subs
+clean:: clean-licence clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OBJDIR)/*
 ifneq ($(APP),)
