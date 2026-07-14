@@ -56,16 +56,19 @@ TEST_SRCDIR ?= tests
 TEST_ABSDIR ?= absolute
 TEST_UNITYDIR ?= unity
 
+TEST_UNITYOBJ := unity.o
+TEST_UNITYINT := unity_internals.h
+
 TEST_PREFIX := test_
 TEST_ABSSUFFIX := ,ff8
 
-TEST_DEFINES = -DUNIT_TESTING
+TEST_DEFINES = -DUNIT_TESTING -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"'
 TEST_INCLUDES = -I$(SRCDIR) -I$(TESTDIR)/$(TEST_UNITYDIR) $(INCLUDES)
 
 # Find the test_*.c source files.
 
-TEST_SRCS = $(wildcard $(TESTDIR)/$(TEST_SRCDIR)*.c)
-TEST_ABSS = $(patsubst $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c, $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TARGET_EXTENSION), $(TEST_SRCS))
+TEST_SRCS = $(wildcard $(TESTDIR)/$(TEST_SRCDIR)/*.c)
+TEST_ABSS = $(patsubst $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c, $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TEST_ABSSUFFIX), $(TEST_SRCS))
 
 # Create the subfolders within $(OBJDIR) for the test object files
 # and dependency files.
@@ -86,46 +89,50 @@ $(OBJDIR)/$(TEST_DEPDIR): | $(OBJDIR)
 TEST_DEPS := $(addprefix $(OBJDIR)/$(TEST_DEPDIR)/, $(OBJS:.o=.d))
 TEST_OBJS := $(addprefix $(OBJDIR)/$(TEST_OBJDIR)/, $(OBJS))
 
-.PHONY: test
-test: $(TEST_ABSS) $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+# The test targets.
 
-$(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TARGET_EXTENSION): $(OBJDIR)/$(TEST_OBJDIR)/$(TESTPREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/unity.o $(TEST_OBJS)
+.PHONY: test
+test: $(TEST_ABSS) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+
+.PRECIOUS: $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/%.o $(OBJDIR)/$(TEST_DEPDIR)/%.d
+
+# Link the test absolute files.
+
+$(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TEST_ABSSUFFIX): $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_UNITYOBJ) $(TEST_OBJS) | $(TESTDIR)/$(TEST_ABSDIR)
 	@$(call show-stage,LINKING,$@)
 	@$(CC) $(CCFLAGS) $(LINKS) -o $@ $^
 
+# Include the test dependencies
 
+-include $(TEST_DEPS)
 
+# Make the test harness object files.
 
+$(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o: $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+	@$(call show-stage,COMPILING,$<)
+	@$(CC) -c $(CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(TEST_INCLUDES) $< > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@mv -f $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d) $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@rm -f $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp
 
-# Make the test object files.
+# Make the test target object files.
 
-#$(PATHO)%.o:: $(PATHT)%.c
-#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
-
-# Make the target object files.
-
-#$(PATHO)$(TESTPREFIX)$(TARGETPREFIX)%.o:: $(PATHS)%.c
-#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+$(OBJDIR)/$(TEST_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+	@$(call show-stage,COMPILING,$<)
+	@$(CC) -c $(CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
+	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(TEST_INCLUDES) $< > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@mv -f $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d) $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp
+	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
+	@rm -f $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp
 
 # Make the Unity object files.
 
-#$(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
-#	$(COMPILE) $(CCFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
-
-# Make the dependency lists.
-
-#$(PATHD)%.d:: $(PATHT)%.c
-#	$(DEPEND) $(CCFLAGS) $(INCLUDES) $(DEFINES) $@ $<
-
-
-
-
-
-
-
-# -----------------------------------
-# This should all be optional on test
-# -----------------------------------
+$(OBJDIR)/$(TEST_OBJDIR)/$(TEST_UNITYOBJ): $(TESTDIR)/$(TEST_UNITYDIR)/$(TEST_UNITYOBJ:.o=.c) $(TESTDIR)/$(TEST_UNITYDIR)/$(TEST_UNITYOBJ:.o=.h) $(TESTDIR)/$(TEST_UNITYDIR)/$(TEST_UNITYINT) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+	@$(call show-stage,COMPILING,$<)
+	@$(CC) -c $(CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
 
 # Create the subfolders within $(OBJDIR) for the application object files
 # and dependency files.
@@ -140,6 +147,12 @@ $(OBJDIR)/$(APP_OBJDIR): | $(OBJDIR)
 $(OBJDIR)/$(APP_DEPDIR): | $(OBJDIR)
 	@$(call show-stage,CREATING,$(OBJDIR)/$(APP_DEPDIR))
 	@$(MKDIR) $(OBJDIR)/$(APP_DEPDIR)
+
+# Create the $(TEST_ABSDIR) folder within $(TESTDIR)
+
+$(TESTDIR)/$(TEST_ABSDIR):
+	@$(call show-stage,CREATING,$(TESTDIR)/$(TEST_ABSDIR))
+	@$(MKDIR) $(TESTDIR)/$(TEST_ABSDIR)
 
 # Identify the dependency and object files from the $(OBJS) list.
 
@@ -172,4 +185,14 @@ clean-objects:
 ifneq ($(OBJDIR),)
 	@$(call show-stage, CLEANING, $(OBJDIR)/*)
 	$(RM) $(OBJDIR)/*
+endif
+
+# The rule to clean the test absolute files.
+#
+# clean-tests should be a prerequisite of the clean target.
+
+clean-tests:
+ifneq ($(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)*$(TEST_ABSSUFFIX),//*)
+	@$(call show-stage, CLEANING, $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)*$(TEST_ABSSUFFIX))
+	$(RM) $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)*$(TEST_ABSSUFFIX)
 endif

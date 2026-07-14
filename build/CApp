@@ -134,7 +134,7 @@ endif
 
 # Clean targets
 
-clean:: clean-objects clean-documentation clean-licence clean-menus clean-subs
+clean:: clean-objects clean-tests clean-documentation clean-licence clean-menus clean-subs
 	@$(call show-stage,CLEANING,)
 	$(RM) $(OUTDIR)/$(APP)/$(RUNIMAGE)
 ifneq ($(PACKAGE),)
