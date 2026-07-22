@@ -101,6 +101,18 @@ Within each of the source files, any occurrences of the text `{{VERSION}}` will 
 
     Set MyApp$Version "{{VERSION}}"
 
+### C unit tests
+
+When working with `Capp`, `CLib` and `Cross`, [Unity unit tests](https://www.throwtheswitch.org/unity) can optionally be built using the `test` target.
+
+If present, test infrastructure should be located within the `TESTDIR` folder, which defaults to `tests/`. Within this, the test sources should be placed inside `TEST_SRCDIR` and have filenames starting with the prefix `TEST_PREFIX`. These latter variables default to `tests/` and `test_` respectively, so an example test source file might be `test/tests/test_example.c`.
+
+The Unity source files `unity.c`, `unity.h` and `unity_internals.h` should be placed within the `TEST_UNITYDIR` folder, which defaults to `test/unity/`. Executable files, which are built for the current target platform, are saved within `TEST_ABSDIR` - giving a default location of `test/absolute/`. These will be cleaned, but other files within the folder will be preserved if present.
+
+The presence of unit tests is detected by the presence of `test/tests/test_*.c` files (dependant on the variables detailed above).
+
+When building tests, the `UNIT_TESTING` macro is defined to enable the C preprocessor to include or exclude code as required. It will probably be necessary to prevent an application's `main()` function from being built in a unit text context, for example. The intermediate object files are stored separately, so that variations in the code are preserved between builds.
+
 ### Backups
 
 It is possible to `make backup` to dump all of the files from within the project into a dated zip file whose name is based on `ARCHIVE` with the current date in `YYYYMMDD` format appended (eg. `project20260124.zip`). This provides a means to snapshot the state of the project at a given moment in time.
