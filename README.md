@@ -111,7 +111,7 @@ The Unity source files `unity.c`, `unity.h` and `unity_internals.h` should be pl
 
 The presence of unit tests is detected by the presence of `test/tests/test_*.c` files (dependant on the variables detailed above).
 
-When building tests, the `UNIT_TESTING` macro is defined to enable the C preprocessor to include or exclude code as required. It will probably be necessary to prevent an application's `main()` function from being built in a unit text context, for example. The intermediate object files are stored separately, so that variations in the code are preserved between builds.
+When building tests, the `UNIT_TESTING` macro is defined to enable the C preprocessor to include or exclude code as required. It will probably be necessary to prevent an application's `main()` function from being built in a unit text context, for example. The intermediate object files are stored separately, so that variations in the code are preserved between builds. Additional flags are passed to `CC` when building the application sources for unit testing, using `TEST_CCFLAGS`: by default, this is used to remove the `Wunused-function` warning as this can be spurious if parts of the source are being omitted.
 
 ### Backups
 

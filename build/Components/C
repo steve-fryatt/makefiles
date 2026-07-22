@@ -46,24 +46,38 @@ ifeq ($(RM),)
 $(error C Projects require RM to be available)
 endif
 
-# -----------------------------------
-# This should all be optional on test
-# -----------------------------------
+# Definitions for the Unit Test build
 
+# The folder holding the test files.
 TESTDIR ?= test
 
+# The folder holding the test source files.
 TEST_SRCDIR ?= tests
+
+# The folder holding the test output absolute files.
 TEST_ABSDIR ?= absolute
+
+# The folder holding Unity.
 TEST_UNITYDIR ?= unity
 
+# The Unity object and internals header files.
 TEST_UNITYOBJ := unity.o
 TEST_UNITYINT := unity_internals.h
 
+# The prefix on all test source files.
 TEST_PREFIX := test_
+
+# The suffix on all test absolute files.
 TEST_ABSSUFFIX := ,ff8
 
+# The macros defined for all unit test builds.
 TEST_DEFINES = -DUNIT_TESTING -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"'
+
+# The include folders for all unit test builds.
 TEST_INCLUDES = -I$(SRCDIR) -I$(TESTDIR)/$(TEST_UNITYDIR) $(INCLUDES)
+
+# Specific CC flags for all unit test target files (ie. application sources).
+TEST_CCFLAGS = -Wno-unused-function
 
 # Find the test_*.c source files.
 
@@ -94,6 +108,8 @@ TEST_OBJS := $(addprefix $(OBJDIR)/$(TEST_OBJDIR)/, $(OBJS))
 .PHONY: test
 test: $(TEST_ABSS) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
 
+# Files from the test build process that we don't want to lose when the build is complete.
+
 .PRECIOUS: $(TEST_ABSS) $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/%.o $(OBJDIR)/$(TEST_DEPDIR)/%.d
 
 # Link the test absolute files.
@@ -121,7 +137,7 @@ $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o: $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PRE
 
 $(OBJDIR)/$(TEST_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
 	@$(call show-stage,COMPILING,$<)
-	@$(CC) -c $(CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
+	@$(CC) -c $(CCFLAGS) $(TEST_CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(TEST_INCLUDES) $< > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
 	@mv -f $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d) $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp
 	@sed -e 's|.*:|$@:|' < $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d).tmp > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
