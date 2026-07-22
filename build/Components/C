@@ -94,7 +94,7 @@ TEST_OBJS := $(addprefix $(OBJDIR)/$(TEST_OBJDIR)/, $(OBJS))
 .PHONY: test
 test: $(TEST_ABSS) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
 
-.PRECIOUS: $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/%.o $(OBJDIR)/$(TEST_DEPDIR)/%.d
+.PRECIOUS: $(TEST_ABSS) $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o $(OBJDIR)/$(TEST_OBJDIR)/%.o $(OBJDIR)/$(TEST_DEPDIR)/%.d
 
 # Link the test absolute files.
 
