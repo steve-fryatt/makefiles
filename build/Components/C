@@ -30,6 +30,10 @@ INCLUDES ?=
 
 BUILDINFO ?=
 
+# An optional list of subfolders that our client requires in the folders
+# within $(OBJDIR)
+OBJS_SUBDIRS ?=
+
 ifeq ($(CCFLAGS),)
 $(error C Projects require CCFLAGS to be set)
 endif
@@ -122,9 +126,26 @@ $(TESTDIR)/$(TEST_ABSDIR)/$(TEST_PREFIX)%$(TEST_ABSSUFFIX): $(OBJDIR)/$(TEST_OBJ
 
 -include $(TEST_DEPS)
 
+# Make up any additional object subfolder prerequisite lists.
+
+OBJS_TEST_SUBDEPDIRS = $(addprefix $(OBJDIR)/$(TEST_DEPDIR)/, $(OBJS_SUBDIRS))
+OBJS_TEST_SUBOBJDIRS = $(addprefix $(OBJDIR)/$(TEST_OBJDIR)/, $(OBJS_SUBDIRS))
+
+ifneq ($(OBJS_TEST_SUBDEPDIRS),)
+$(OBJS_TEST_SUBDEPDIRS): %: | $(@D)
+	@$(call show-stage,CREATING,$@)
+	@$(MKDIR) $@
+endif
+
+ifneq ($(OBJS_TEST_SUBOBJDIRS),)
+$(OBJS_TEST_SUBOBJDIRS): %: | $(@D)
+	@$(call show-stage,CREATING,$@)
+	@$(MKDIR) $@
+endif
+
 # Make the test harness object files.
 
-$(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o: $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+$(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o: $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PREFIX)%.c | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR) $(OBJS_TEST_SUBOBJDIRS) $(OBJS_TEST_SUBDEPDIRS)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(TEST_INCLUDES) $< > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
@@ -135,7 +156,7 @@ $(OBJDIR)/$(TEST_OBJDIR)/$(TEST_PREFIX)%.o: $(TESTDIR)/$(TEST_SRCDIR)/$(TEST_PRE
 
 # Make the test target object files.
 
-$(OBJDIR)/$(TEST_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR)
+$(OBJDIR)/$(TEST_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(TEST_OBJDIR) $(OBJDIR)/$(TEST_DEPDIR) $(OBJS_TEST_SUBOBJDIRS) $(OBJS_TEST_SUBDEPDIRS)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) $(TEST_CCFLAGS) $(TEST_INCLUDES) $(TEST_DEFINES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(TEST_INCLUDES) $< > $(OBJDIR)/$(TEST_DEPDIR)/$(@F:.o=.d)
@@ -182,7 +203,24 @@ OBJS := $(addprefix $(OBJDIR)/$(APP_OBJDIR)/, $(OBJS))
 
 -include $(DEPS)
 
-$(OBJDIR)/$(APP_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJDIR) $(OBJDIR)/$(APP_DEPDIR)
+# Make up any additional object subfolder prerequisite lists.
+
+OBJS_SUBDEPDIRS = $(addprefix $(OBJDIR)/$(APP_DEPDIR)/, $(OBJS_SUBDIRS))
+OBJS_SUBOBJDIRS = $(addprefix $(OBJDIR)/$(APP_OBJDIR)/, $(OBJS_SUBDIRS))
+
+ifneq ($(OBJS_SUBDEPDIRS),)
+$(OBJS_SUBDEPDIRS): %: | $(@D)
+	@$(call show-stage,CREATING,$@)
+	@$(MKDIR) $@
+endif
+
+ifneq ($(OBJS_SUBOBJDIRS),)
+$(OBJS_SUBOBJDIRS): %: | $(@D)
+	@$(call show-stage,CREATING,$@)
+	@$(MKDIR) $@
+endif
+
+$(OBJDIR)/$(APP_OBJDIR)/%.o: $(SRCDIR)/%.c $(EXTRASRCPREREQ) | $(OBJDIR)/$(APP_OBJDIR) $(OBJDIR)/$(APP_DEPDIR) $(OBJS_SUBOBJDIRS) $(OBJS_SUBDEPDIRS)
 	@$(call show-stage,COMPILING,$<)
 	@$(CC) -c $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< -o $@
 	@$(CC) -MM $(CCFLAGS) -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"' $(INCLUDES) $< > $(OBJDIR)/$(APP_DEPDIR)/$(@F:.o=.d)

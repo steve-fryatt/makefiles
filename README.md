@@ -101,6 +101,14 @@ Within each of the source files, any occurrences of the text `{{VERSION}}` will 
 
     Set MyApp$Version "{{VERSION}}"
 
+### C Object folders
+
+When working with `Capp`, `CLib` and `Cross`, object and dependency files will be stored in sub-folders within `OBJDIR` - specifically `APP_DEPDIR`, `APP_OBJDIR`, `TEST_DEPDIR` and `TEST_OBJDIR`. These will all default to sensible values, and do not need to be set by the calling Makefile.
+
+If there are sib-folders within the source `SRCDIR` folder, then `OBJS_SUBDIRS` should be set to a list of these folders. For example
+
+    OBJS_SUBDIRS = core extra
+
 ### C unit tests
 
 When working with `Capp`, `CLib` and `Cross`, [Unity unit tests](https://www.throwtheswitch.org/unity) can optionally be built using the `test` target.
