@@ -52,11 +52,6 @@ ifeq ($(RM),)
 $(error Simple Documentation requires RM to be available)
 endif
 
-# Build the documentation
-
-MANFILE := $(firstword $(MANSRC))
-MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
-
 # In the calling Makefile, documentation should be a prerequesite of the rule
 # to build all.
 

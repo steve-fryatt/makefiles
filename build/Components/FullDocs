@@ -84,11 +84,6 @@ ifeq ($(RM),)
 $(error Full Documentation requires RM to be available)
 endif
 
-# Build the documentation
-
-MANFILE := $(firstword $(MANSRC))
-MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
-
 # In the calling Makefile, documentation should be a prerequesite of the rule
 # to build all.
 
@@ -101,6 +96,12 @@ documentation:								\
 		$(if $(SHHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(SHHELP))	\
 		$(if $(HTHELP),$(OUTDIR)/$(APP)/$(UKRES)/$(HTHELP))	\
 		$(if $(HTMLHELP),$(OUTDIR)/$(HTMLHELP))
+
+# Extract the first item from the list of manual source files, then prefix
+# all of the entries with the source folder.
+
+MANFILE := $(firstword $(MANSRC))
+MANSRC := $(addprefix $(MANUAL)/, $(MANSRC))
 
 # Build FindHelp.
 
