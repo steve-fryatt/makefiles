@@ -78,7 +78,7 @@ TEST_ABSSUFFIX := ,ff8
 TEST_DEFINES = -DUNIT_TESTING -D'BUILD_VERSION="$(VERSION)"' -D'BUILD_DATE="$(BUILD_DATE)"' -D'BUILD_INFO="$(BUILDINFO)"'
 
 # The include folders for all unit test builds.
-TEST_INCLUDES = -I$(SRCDIR) -I$(TESTDIR)/$(TEST_UNITYDIR) $(INCLUDES)
+TEST_INCLUDES = -iquote$(TESTDIR)/$(TEST_UNITYDIR) -iquote$(SRCDIR) $(INCLUDES)
 
 # Specific CC flags for all unit test target files (ie. application sources).
 TEST_CCFLAGS = -Wno-unused-function

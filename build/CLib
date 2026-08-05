@@ -70,6 +70,7 @@ STRDUP := strdup
 # Includes and libraries.
 
 INCLUDES := -I$(GCCSDK_INSTALL_ENV)/include
+test: LINKS := -L$(GCCSDK_INSTALL_ENV)/lib -lOSLibH32 -lFlexLib32
 
 # Build Tools
 
